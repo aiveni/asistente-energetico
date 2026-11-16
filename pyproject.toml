@@ -1,0 +1,9 @@
+[project]
+name = "agente-energetico-ia"
+version = "0.1.0"
+description = "Planificador energético con Python y Django"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.uv]
+package = false
