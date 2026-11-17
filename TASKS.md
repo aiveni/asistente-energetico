@@ -68,8 +68,10 @@ del horario indicado, con un ejemplo verificable a mano.
 - [x] Ejecutar las 17 pruebas del proyecto: todas correctas, sin conexión a la API.
 - [x] Guardar la integración de precios reales en el commit `5da5905`.
 - [x] Actualizar el README con la consulta real, su ejecución y sus limitaciones actuales.
-- [ ] Normalizar y validar la zona Europe/Madrid antes de admitir fechas arbitrarias. **Siguiente paso guiado.**
-- [ ] Definir soporte o rechazo explícito de días con cambio de hora y horarios que crucen medianoche.
+- [x] Normalizar cada instante a Europe/Madrid antes de comprobar fecha, hora y duplicados.
+- [x] Exigir desplazamiento UTC explícito y probar invierno, verano y cambios de fecha entre zonas.
+- [x] Declarar tzdata como dependencia directa para disponer de zonas IANA también en Windows.
+- [x] Definir el rechazo explícito de días con cambio de hora y horarios que crucen medianoche en esta versión.
 - [x] Rechazar precios ausentes, no numéricos, booleanos, NaN e infinitos en el adaptador, conservando cero y negativos.
 - [x] Probar la precisión de enteros y Decimal y el error web con una respuesta HTTP de precios inválidos.
 - [x] Validar la estructura utilizada: objeto raíz, included, ID de serie, attributes y lista no vacía de values.
@@ -89,13 +91,15 @@ del horario indicado, con un ejemplo verificable a mano.
 - [x] Agrupar cálculo y consulta en `energia/servicios/`, y todas las pruebas en `energia/tests/`.
 - [x] Actualizar imports, rutas de patch y comandos después de mover archivos.
 - [x] Ejecutar las 20 pruebas sin red y el ejemplo ficticio después de la reorganización.
-- [ ] Decidir cómo almacenar y actualizar los precios según la necesidad real.
+- [ ] Decidir cómo almacenar y actualizar los precios según la necesidad real. **Siguiente paso guiado: reutilización por fecha y caducidad.**
 - [x] Probar el recorrido completo con precios simulados: formulario → cálculo → resultado.
 - [x] Probar mensajes, conservación de campos y ausencia de recomendación ante fallos HTTP, ValueError y precios vacíos o incompletos.
 - [x] Comprobar que una búsqueda correcta después de un fallo muestra el resultado y elimina el error.
 - [x] Ejecutar las 24 pruebas sin red: siete del recorrido web y 17 de servicios.
 - [x] Ejecutar las 29 pruebas sin red después de validar precios: once del adaptador y ocho de web.
 - [x] Ejecutar las 40 pruebas sin red después de validar estructuras: quince del adaptador, diez de consulta y nueve de web.
+- [x] Configurar TIME_ZONE en Europe/Madrid y mostrar la zona y la limitación de cambios de hora en el formulario.
+- [x] Ejecutar las 51 pruebas sin red tras normalizar: veintidós del adaptador, once de consulta y doce de web.
 - [ ] Mejorar la presentación del formulario y del resultado para su uso público.
 - [ ] Configurar comprobaciones automáticas en GitHub Actions al preparar el remoto.
 - [ ] Preparar la configuración de producción: secretos, DEBUG, hosts y HTTPS.
@@ -115,6 +119,7 @@ del horario indicado, con un ejemplo verificable a mano.
 
 - [ ] Valorar skills propias si aparecen procedimientos que repetimos a menudo.
 - [ ] Reconsiderar otras funciones energéticas después de completar el primer alcance.
+- [ ] Dar soporte completo a días de 23 o 25 horas con intervalos y duración real, si se amplía el alcance.
 - [ ] Retomar el asistente del paro únicamente cuando se decida expresamente.
 
 ## Tareas necesarias añadidas y qué resuelven
@@ -130,8 +135,11 @@ del horario indicado, con un ejemplo verificable a mano.
   la web pública y detectar errores antes de publicar cambios.
 - **Validación de fecha y hora exacta en el adaptador:** evita mezclar días o convertir
   un registro de las 18:15 en un precio de la hora completa de las 18.
-- **Zona horaria:** pendiente antes de admitir consultas generales; evita cálculos
-  con fechas y horas locales mal interpretadas.
+- **Zona horaria:** normalizar antes de extraer la hora evita interpretar UTC como
+  hora peninsular o usar precios de otro día local. Exigir desplazamiento evita
+  depender de la zona configurada en el equipo.
+- **Rechazo de días con cambio de hora:** protege el modelo actual de horas 0–23
+  frente a horas inexistentes o repetidas; el soporte completo queda aplazado.
 - **Validación de estructura:** transforma los campos ausentes y tipos inesperados
   en errores de datos controlados antes de acceder a ellos o calcular precios.
 - **Precios numéricos y finitos:** impide que un valor ausente, un booleano, NaN o
@@ -174,3 +182,8 @@ del horario indicado, con un ejemplo verificable a mano.
   Tras añadir comprobaciones explícitas, las 40 pruebas pasan sin internet.
   Se actualiza la documentación y se dejan los cambios sin commit por petición
   de Aitor. Próximo paso: normalización y validación de zona horaria.
+- **17-11-2026:** Con autorización de Aitor se guarda la validación JSON en
+  `8c26c10`. Se normalizan los registros a Europe/Madrid con ZoneInfo y astimezone,
+  se exige desplazamiento UTC y se rechazan días con cambio de hora. Se declara
+  tzdata como dependencia directa y se alinea Django y el formulario con la zona.
+  Las 51 pruebas pasan. La normalización queda sin commit para revisión.

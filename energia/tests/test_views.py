@@ -33,6 +33,14 @@ class TestInicio(SimpleTestCase):
                 self.assertEqual(formulario[campo].value(), valor)
                 self.assertContains(respuesta, f'value="{valor}"')
 
+    def _respuesta_pvpc(self, registros):
+        """Construye una respuesta de REData para probar el recorrido completo sin red."""
+        return httpx.Response(
+            200,
+            json={"included": [{"id": "1001", "attributes": {"values": registros}}]},
+            request=httpx.Request("GET", "https://apidatos.ree.es"),
+        )
+
     @patch("energia.views.obtener_precios")
     def test_muestra_formulario_sin_consultar_api(self, consulta):
         """Abrir la página muestra la plantilla sin solicitar precios a REData."""
@@ -234,3 +242,53 @@ class TestInicio(SimpleTestCase):
                     "No hay datos horarios utilizables para esa fecha y horario.",
                 )
                 consulta.assert_called_once()
+
+    @patch("energia.servicios.consultar_precios.httpx.get")
+    def test_resultado_usa_horas_de_madrid_con_respuesta_utc(self, consulta):
+        """La página muestra la franja local correcta a partir de precios fechados en UTC."""
+        consulta.return_value = self._respuesta_pvpc([
+            {"datetime": f"2026-11-15T{hora}:00:00Z", "value": precio}
+            for hora, precio in [(17, 237.62), (18, 240.99), (19, 231.96), (20, 214.55)]
+        ])
+
+        respuesta = self.client.get(reverse("inicio"), self.busqueda)
+
+        self.assertContains(respuesta, "Franja recomendada")
+        self.assertContains(respuesta, "Europe/Madrid")
+        resultado = respuesta.context["resultado"]
+        self.assertEqual(resultado["fecha"].isoformat(), self.busqueda["fecha"])
+        self.assertEqual(resultado["inicio"], 20)
+        self.assertEqual(resultado["fin"], 22)
+        self.assertEqual(resultado["coste"], Decimal("0.44651"))
+
+    @patch("energia.servicios.consultar_precios.httpx.get")
+    def test_datos_sin_zona_muestran_error(self, consulta):
+        """Una marca temporal sin desplazamiento no produce una recomendación ambigua."""
+        consulta.return_value = self._respuesta_pvpc([
+            {"datetime": f"2026-11-15T{hora}:00:00", "value": 100}
+            for hora in range(18, 22)
+        ])
+
+        respuesta = self.client.get(reverse("inicio"), self.busqueda)
+
+        self._comprobar_error_sin_resultado(
+            respuesta, "No hay datos horarios utilizables para esa fecha y horario."
+        )
+
+    @patch("energia.servicios.consultar_precios.httpx.get")
+    def test_dias_con_cambio_de_hora_muestran_error(self, consulta):
+        """Los días no admitidos conservan la búsqueda e informan de la limitación."""
+        for fecha in ["2026-03-29", "2026-10-25"]:
+            with self.subTest(fecha=fecha):
+                self.busqueda["fecha"] = fecha
+                consulta.return_value = self._respuesta_pvpc([
+                    {"datetime": f"{fecha}T{hora}:00:00Z", "value": 100}
+                    for hora in range(16, 21)
+                ])
+
+                respuesta = self.client.get(reverse("inicio"), self.busqueda)
+
+                self._comprobar_error_sin_resultado(
+                    respuesta, "No hay datos horarios utilizables para esa fecha y horario."
+                )
+                self.assertContains(respuesta, "días con cambio de hora")

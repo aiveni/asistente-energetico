@@ -22,6 +22,8 @@ Progreso: [TASKS.md](TASKS.md). Motivos de la estructura y del cálculo:
 Requisitos: Python 3.12 o superior y uv instalado fuera del entorno virtual.
 El entorno actual utiliza Python 3.15.2 y Django 6.1.3. Las dependencias se
 declaran en `pyproject.toml` y sus versiones resueltas se guardan en `uv.lock`.
+`tzdata` se declara como dependencia directa para disponer de los datos de zona
+horaria también en Windows.
 
 Desde la raíz del repositorio:
 
@@ -71,14 +73,16 @@ Los ejemplos se ejecutan como módulos (`-m`) porque ahora pertenecen al paquete
 uv run python manage.py test -v 2
 ```
 
-Actualmente hay 40 pruebas: seis del motor, quince del adaptador, diez de la
-consulta HTTP simulada y nueve del recorrido web. Las pruebas web no usan una
+Actualmente hay 51 pruebas: seis del motor, veintidós del adaptador, once de la
+consulta HTTP simulada y doce del recorrido web. Las pruebas web no usan una
 base de datos. El comando prepara la configuración de Django para ejecutarlas.
 
 Se comprueba que los fallos de conexión, timeout, estado HTTP y los datos no
 utilizables muestran un error sin recomendación, conservan los campos y permiten
 repetir la búsqueda. También se prueban cuerpos vacíos, HTML, JSON truncado,
 campos ausentes, tipos inesperados y registros sin una fecha y hora válida.
+Las pruebas de zona horaria cubren invierno, verano, UTC, cambios de fecha al
+convertir, ausencia de desplazamiento y rechazo de días con cambio de hora.
 
 ## Estructura
 
@@ -110,6 +114,9 @@ están en [docs/decisiones.md](docs/decisiones.md).
 - [Documentación de REData de Red Eléctrica](https://www.ree.es/es/datos/apidatos).
 - Serie PVPC con identificador 1001, sistema peninsular 8741.
 - El adaptador convierte de €/MWh a €/kWh dividiendo entre 1.000.
+- La fecha solicitada y las horas del formulario se interpretan en Europe/Madrid.
+  Los registros deben indicar su desplazamiento UTC y se convierten a esta zona
+  antes de comprobar día, hora y duplicados.
 
 ## Límites actuales
 
@@ -120,14 +127,16 @@ están en [docs/decisiones.md](docs/decisiones.md).
 - Rechaza precios ausentes, texto, booleanos, NaN e infinitos; conserva cero y negativos.
 - Valida los campos utilizados de la respuesta JSON y exige una lista no vacía
   de registros con fecha y hora ISO de texto y separador T.
-- No cruza medianoche ni tiene soporte completo de días con cambio de hora.
-- La normalización a Europe/Madrid y el tratamiento de datos caducados siguen pendientes.
+- No cruza medianoche. Rechaza todos los días con cambio de hora en esta versión,
+  incluso si el horario solicitado queda fuera del salto, porque el motor representa
+  días normales de 24 horas. La web informa de esta limitación.
+- El tratamiento de datos caducados sigue pendiente.
 - Cada búsqueda válida consulta REData; todavía no hay caché de precios.
 - Los ajustes de Django son de desarrollo local; la preparación de producción
   se registra como pendiente en TASKS.md.
 
 ## Próximos pasos
 
-1. Revisar zona horaria, cambios de hora y actualización de precios.
+1. Decidir cómo reutilizar precios por fecha y cuándo actualizarlos.
 2. Mejorar la presentación, preparar CI y publicar el planificador.
 3. Añadir el chat después del planificador público.

@@ -49,7 +49,30 @@ Estas comprobaciones se hacen antes de acceder a cada campo. Así se comunica
 ValueError ante datos inesperados sin capturar indiscriminadamente otros errores
 del programa. Los cuerpos vacíos, HTML y JSON truncado ya producen ValueError al
 decodificar la respuesta. La vista conserva la búsqueda y muestra el error de datos.
-La normalización de zona horaria y el soporte completo de cambios de hora siguen pendientes.
+
+## Normalización de zona horaria
+
+La fecha pedida y las horas del formulario son locales de Europe/Madrid. El
+adaptador exige un desplazamiento UTC explícito en cada registro, interpreta el
+instante con datetime.fromisoformat y lo convierte con astimezone y ZoneInfo.
+Después comprueba fecha, hora exacta y duplicados. Nunca presupone la zona del
+equipo para una marca temporal sin desplazamiento.
+
+Esto permite aceptar, por ejemplo, las 23:00 UTC del día anterior como las 00:00
+del día pedido en invierno. Los desplazamientos de verano e invierno proceden
+de la base IANA, sin fijar manualmente UTC+1 o UTC+2. Django usa la misma zona
+en TIME_ZONE y conserva USE_TZ=True.
+
+Se declara tzdata como dependencia directa para que los servicios funcionen
+también en Windows, donde no siempre hay una base IANA del sistema disponible.
+Véase la [documentación de zoneinfo](https://docs.python.org/3/library/zoneinfo.html).
+
+La primera versión rechaza los días con cambio de hora, detectando la diferencia
+de desplazamiento entre el principio y el final del día local. El motor actual
+representa horas enteras 0–23; aceptar días de 23 o 25 horas podría dar resultados
+con una hora inexistente o perder una hora repetida. Dar soporte completo a esos
+días requiere representar intervalos con instantes y duración real, y queda para
+un paso posterior. La limitación aparece en la página y se prueba desde la web.
 
 ## Organización dentro de la app energia
 
@@ -78,8 +101,8 @@ y Django 6.1.3. `.venv`, la base SQLite local y los documentos de `_local/` se
 excluyen de Git. Las tablas incluidas por Django no implican tener modelos
 propios ni almacenamiento de los precios consultados.
 
-Las pruebas se ejecutan con `python manage.py test`. Son 40: motor (6), adaptador
-(15), consulta HTTP (10) y web (9). Las llamadas externas se simulan para comprobar
+Las pruebas se ejecutan con `python manage.py test`. Son 51: motor (6), adaptador
+(22), consulta HTTP (11) y web (12). Las llamadas externas se simulan para comprobar
 éxitos y errores sin depender de la disponibilidad de REData. Las pruebas de
 la web utilizan SimpleTestCase porque este recorrido no accede a una base de datos.
 
@@ -91,6 +114,10 @@ una respuesta HTTP simulada que contiene precios inválidos, incluido 1e999,
 que el lector JSON convierte en infinito. La web muestra el error sin producir
 una recomendación. También se comprueba el recorrido con cuerpos vacíos, HTML,
 estructuras JSON inesperadas y registros sin fecha de texto, sin mostrar un error 500.
+Las pruebas de normalización verifican los resultados de invierno y verano, el
+cambio de fecha entre UTC y Madrid, los duplicados tras convertir y el rechazo
+de registros sin zona y días con cambio de hora. La muestra real mantiene 20–22
+y 0,44651 euros aunque sus marcas se expresen en UTC.
 
 ## Documentación y skills
 

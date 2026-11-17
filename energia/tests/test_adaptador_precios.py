@@ -33,6 +33,88 @@ class TestConvertirPrecios(unittest.TestCase):
         for precio in precios.values():
             self.assertIsInstance(precio, Decimal)
 
+    def test_normaliza_utc_en_invierno_y_verano(self):
+        """Madrid aplica su desplazamiento de invierno o verano al mismo horario local."""
+        casos = [
+            ("2026-11-15", "2026-11-15T17:00:00Z"),
+            ("2026-07-15", "2026-07-15T16:00:00+00:00"),
+        ]
+
+        for fecha, marca in casos:
+            with self.subTest(fecha=fecha):
+                registros = [{"datetime": marca, "value": 237.62}]
+
+                self.assertEqual(
+                    convertir_precios(registros, fecha_esperada=fecha),
+                    {18: Decimal("0.23762")},
+                )
+
+    def test_valida_el_dia_despues_de_convertir_a_madrid(self):
+        """Un instante del día anterior en UTC puede ser medianoche del día pedido."""
+        casos = [
+            ("2026-11-15", "2026-11-14T23:00:00Z"),
+            ("2026-07-15", "2026-07-14T22:00:00Z"),
+        ]
+
+        for fecha, marca in casos:
+            with self.subTest(fecha=fecha):
+                self.assertEqual(
+                    convertir_precios(
+                        [{"datetime": marca, "value": 100}], fecha_esperada=fecha
+                    ),
+                    {0: Decimal("0.1")},
+                )
+
+    def test_rechaza_registro_que_cambia_a_otro_dia_local(self):
+        """La fecha de origen no basta si en Madrid el instante pertenece a otro día."""
+        casos = [
+            ("2026-11-15", "2026-11-15T23:00:00Z"),
+            ("2026-07-15", "2026-07-15T22:00:00Z"),
+        ]
+
+        for fecha, marca in casos:
+            with self.subTest(fecha=fecha):
+                with self.assertRaisesRegex(ValueError, "día solicitado"):
+                    convertir_precios(
+                        [{"datetime": marca, "value": 100}], fecha_esperada=fecha
+                    )
+
+    def test_rechaza_fechas_sin_desplazamiento_utc(self):
+        """No supone la zona del equipo cuando un registro no identifica su instante."""
+        for marca in ["2026-11-15T18:00:00", "2026-11-15T18:00"]:
+            with self.subTest(marca=marca):
+                with self.assertRaisesRegex(ValueError, "desplazamiento"):
+                    convertir_precios(
+                        [{"datetime": marca, "value": 100}],
+                        fecha_esperada=self.fecha,
+                    )
+
+    def test_detecta_duplicados_tras_normalizar(self):
+        """Dos representaciones del mismo instante no deben sobrescribir su precio."""
+        registros = [
+            {"datetime": "2026-11-15T17:00:00Z", "value": 100},
+            {"datetime": "2026-11-15T18:00:00+01:00", "value": 200},
+        ]
+
+        with self.assertRaisesRegex(ValueError, "horas repetidas"):
+            convertir_precios(registros, fecha_esperada=self.fecha)
+
+    def test_normaliza_desplazamientos_no_enteros(self):
+        """Valida la hora de Madrid aunque la representación de origen tenga minutos."""
+        registros = [{"datetime": "2026-11-15T22:30:00+05:30", "value": 100}]
+
+        self.assertEqual(
+            convertir_precios(registros, fecha_esperada=self.fecha),
+            {18: Decimal("0.1")},
+        )
+
+    def test_rechaza_hora_no_exacta_despues_de_normalizar(self):
+        """Una hora exacta en origen puede quedar a mitad de hora en Madrid."""
+        registros = [{"datetime": "2026-11-15T18:00:00+00:30", "value": 100}]
+
+        with self.assertRaisesRegex(ValueError, "inicio de cada hora"):
+            convertir_precios(registros, fecha_esperada=self.fecha)
+
     def test_rechaza_contenedor_de_registros_invalido(self):
         """Exige una lista no vacía para evitar resultados parciales o ambiguos."""
         for registros in [None, {}, "", "PVPC", 0, True, (), []]:
@@ -151,15 +233,14 @@ class TestConvertirPrecios(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "horas repetidas"):
             convertir_precios(self.registros + [duplicado], fecha_esperada=self.fecha)
 
-    def test_rechaza_hora_repetida_con_distinto_desplazamiento(self):
-        """Dos instantes distintos con la misma hora local no se fusionan."""
-        registros = [
-            {"datetime": "2026-10-25T02:00:00.000+02:00", "value": 100},
-            {"datetime": "2026-10-25T02:00:00.000+01:00", "value": 200},
-        ]
+    def test_rechaza_dias_con_cambio_de_hora(self):
+        """El motor de horas enteras rechaza días cortos o largos, incluso fuera del salto."""
+        for fecha in ["2026-03-29", "2026-10-25"]:
+            with self.subTest(fecha=fecha):
+                registros = [{"datetime": f"{fecha}T17:00:00Z", "value": 100}]
 
-        with self.assertRaisesRegex(ValueError, "horas repetidas"):
-            convertir_precios(registros, fecha_esperada="2026-10-25")
+                with self.assertRaisesRegex(ValueError, "días con cambio de hora"):
+                    convertir_precios(registros, fecha_esperada=fecha)
 
     def test_rechaza_registros_fuera_de_la_hora_exacta(self):
         """Evita interpretar intervalos parciales como horas completas."""

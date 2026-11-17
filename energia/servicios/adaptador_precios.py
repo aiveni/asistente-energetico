@@ -1,7 +1,31 @@
 """Convierte y valida registros PVPC para el motor, sin consultar internet."""
 
-from datetime import date, datetime
+from datetime import date, datetime, time
 from decimal import Decimal
+from zoneinfo import ZoneInfo
+
+
+ZONA_PENINSULAR = ZoneInfo("Europe/Madrid")
+
+
+def _normalizar_fecha_hora(fecha_texto):
+    """Interpreta un instante ISO con desplazamiento y lo convierte a Madrid.
+
+    Exige zona explícita para no depender de la configuración del equipo.
+    astimezone conserva el instante y ajusta fecha, hora y horario de verano.
+    """
+    if not isinstance(fecha_texto, str) or "T" not in fecha_texto:
+        raise ValueError("Cada registro debe contener una fecha y hora ISO con separador T.")
+
+    try:
+        fecha_hora = datetime.fromisoformat(fecha_texto)
+    except ValueError as error:
+        raise ValueError("El registro no contiene una fecha y hora ISO válida.") from error
+
+    if fecha_hora.utcoffset() is None:
+        raise ValueError("Cada registro debe indicar su desplazamiento respecto a UTC.")
+
+    return fecha_hora.astimezone(ZONA_PENINSULAR)
 
 
 def convertir_precios(registros, fecha_esperada):
@@ -11,18 +35,26 @@ def convertir_precios(registros, fecha_esperada):
     Rechaza registros fuera del inicio de una hora y horas repetidas para
     evitar interpretar intervalos parciales o sobrescribir precios.
 
-    fecha_esperada es el día solicitado en formato YYYY-MM-DD. Cada registro
-    debe pertenecer a ese día según la fecha local que trae la respuesta.
+    fecha_esperada es el día solicitado en formato YYYY-MM-DD en Europe/Madrid.
+    Cada registro debe pertenecer a ese día después de normalizar su instante.
+    El motor actual rechaza días con cambio de hora porque representa días de 24 horas.
 
     Los precios deben ser int, float o Decimal finitos. Se admiten cero y
     negativos; se rechazan valores ausentes, texto y booleanos con ValueError.
 
     registros debe ser una lista no vacía de objetos con datetime como texto
-    ISO con separador T. Los formatos inesperados también producen ValueError.
+    ISO con separador T y desplazamiento UTC explícito. Los formatos inesperados
+    también producen ValueError.
     """
     dia_esperado = date.fromisoformat(fecha_esperada)
     if not isinstance(registros, list) or not registros:
         raise ValueError("Los registros PVPC deben ser una lista no vacía.")
+
+    # El motor de horas 0–23 no puede representar con seguridad días de 23 o 25 horas.
+    inicio_dia = datetime.combine(dia_esperado, time.min, tzinfo=ZONA_PENINSULAR)
+    fin_dia = datetime.combine(dia_esperado, time.max, tzinfo=ZONA_PENINSULAR)
+    if inicio_dia.utcoffset() != fin_dia.utcoffset():
+        raise ValueError("El motor actual no admite días con cambio de hora.")
 
     precios = {}
 
@@ -30,16 +62,9 @@ def convertir_precios(registros, fecha_esperada):
         if not isinstance(registro, dict):
             raise ValueError("Cada registro PVPC debe ser un objeto JSON.")
 
-        fecha_texto = registro.get("datetime")
-        if not isinstance(fecha_texto, str) or "T" not in fecha_texto:
-            raise ValueError("Cada registro debe contener una fecha y hora ISO con separador T.")
+        fecha_hora = _normalizar_fecha_hora(registro.get("datetime"))
 
-        try:
-            fecha_hora = datetime.fromisoformat(fecha_texto)
-        except ValueError as error:
-            raise ValueError("El registro no contiene una fecha y hora ISO válida.") from error
-
-        # Comprobamos el día antes de quedarnos solo con la hora.
+        # Comprobamos día y hora locales, nunca los de la representación de origen.
         if fecha_hora.date() != dia_esperado:
             raise ValueError("Los precios no pertenecen al día solicitado.")
 

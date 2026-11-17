@@ -146,6 +146,22 @@ class TestObtenerPrecios(unittest.TestCase):
                     with self.assertRaisesRegex(ValueError, "no contiene la serie PVPC"):
                         obtener_precios("2026-11-15")
 
+    def test_consulta_y_normaliza_respuesta_utc(self):
+        """La fecha solicitada es local y las marcas UTC se convierten a horas de Madrid."""
+        respuesta = httpx.Response(
+            200,
+            json={"included": [{"id": "1001", "attributes": {"values": [
+                {"datetime": "2026-11-14T23:00:00Z", "value": 100},
+                {"datetime": "2026-11-15T17:00:00Z", "value": 237.62},
+            ]}}]},
+            request=self.solicitud,
+        )
+
+        with patch("energia.servicios.consultar_precios.httpx.get", return_value=respuesta):
+            precios = obtener_precios("2026-11-15")
+
+        self.assertEqual(precios, {0: Decimal("0.1"), 18: Decimal("0.23762")})
+
     def test_propaga_error_http(self):
         """Un estado 503 detiene la consulta antes de intentar leer precios."""
         respuesta = httpx.Response(503, text="Servicio no disponible", request=self.solicitud)
