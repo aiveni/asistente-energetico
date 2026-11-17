@@ -16,12 +16,28 @@ def convertir_precios(registros, fecha_esperada):
 
     Los precios deben ser int, float o Decimal finitos. Se admiten cero y
     negativos; se rechazan valores ausentes, texto y booleanos con ValueError.
+
+    registros debe ser una lista no vacía de objetos con datetime como texto
+    ISO con separador T. Los formatos inesperados también producen ValueError.
     """
     dia_esperado = date.fromisoformat(fecha_esperada)
+    if not isinstance(registros, list) or not registros:
+        raise ValueError("Los registros PVPC deben ser una lista no vacía.")
+
     precios = {}
 
     for registro in registros:
-        fecha_hora = datetime.fromisoformat(registro["datetime"])
+        if not isinstance(registro, dict):
+            raise ValueError("Cada registro PVPC debe ser un objeto JSON.")
+
+        fecha_texto = registro.get("datetime")
+        if not isinstance(fecha_texto, str) or "T" not in fecha_texto:
+            raise ValueError("Cada registro debe contener una fecha y hora ISO con separador T.")
+
+        try:
+            fecha_hora = datetime.fromisoformat(fecha_texto)
+        except ValueError as error:
+            raise ValueError("El registro no contiene una fecha y hora ISO válida.") from error
 
         # Comprobamos el día antes de quedarnos solo con la hora.
         if fecha_hora.date() != dia_esperado:

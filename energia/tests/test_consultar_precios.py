@@ -1,5 +1,6 @@
 """Pruebas de la consulta REData con respuestas simuladas, sin usar internet."""
 
+import json
 import unittest
 from decimal import Decimal
 from unittest.mock import patch
@@ -15,6 +16,72 @@ class TestObtenerPrecios(unittest.TestCase):
     def setUp(self):
         """Prepara una petición local para construir respuestas de HTTPX."""
         self.solicitud = httpx.Request("GET", URL)
+
+    def _comprobar_datos_invalidos(self, datos):
+        """Exige ValueError para un cuerpo JSON inesperado recibido con HTTP 200."""
+        respuesta = httpx.Response(
+            200, text=json.dumps(datos), request=self.solicitud
+        )
+        with patch("energia.servicios.consultar_precios.httpx.get", return_value=respuesta):
+            with self.assertRaises(ValueError):
+                obtener_precios("2026-11-15")
+
+    def test_rechaza_cuerpo_que_no_es_json(self):
+        """Una respuesta vacía, HTML o JSON truncado no se interpreta como precios."""
+        for contenido in ["", "<html>Servicio no disponible</html>", '{"included":']:
+            with self.subTest(contenido=contenido):
+                respuesta = httpx.Response(200, text=contenido, request=self.solicitud)
+
+                with patch("energia.servicios.consultar_precios.httpx.get", return_value=respuesta):
+                    with self.assertRaises(ValueError):
+                        obtener_precios("2026-11-15")
+
+    def test_rechaza_raiz_que_no_es_objeto(self):
+        """La raíz de la respuesta debe ser un objeto, no null, lista o escalar."""
+        for datos in [None, [], "texto", 0, True]:
+            with self.subTest(datos=datos):
+                self._comprobar_datos_invalidos(datos)
+
+    def test_rechaza_campo_included_ausente_o_no_lista(self):
+        """La colección de series debe existir y ser una lista JSON."""
+        respuestas = [{}, {"data": {}}]
+        respuestas += [{"included": valor} for valor in [None, {}, "PVPC", 1, True]]
+
+        for datos in respuestas:
+            with self.subTest(datos=datos):
+                self._comprobar_datos_invalidos(datos)
+
+    def test_rechaza_series_sin_identificador_valido(self):
+        """Cada serie necesita un objeto y un ID de texto o entero válido."""
+        series = [None, [], "PVPC", {}, {"id": None}, {"id": True},
+                  {"id": 1001.0}, {"id": ""}]
+
+        for serie in series:
+            with self.subTest(serie=serie):
+                self._comprobar_datos_invalidos({"included": [serie]})
+
+    def test_rechaza_pvpc_sin_atributos_validos(self):
+        """La serie PVPC debe contener un objeto attributes antes de leer values."""
+        series = [{"id": "1001"}]
+        series += [
+            {"id": "1001", "attributes": valor}
+            for valor in [None, [], "atributos", 1]
+        ]
+
+        for serie in series:
+            with self.subTest(serie=serie):
+                self._comprobar_datos_invalidos({"included": [serie]})
+
+    def test_rechaza_pvpc_sin_lista_de_valores(self):
+        """La consulta no devuelve éxito si faltan registros o tienen otro formato."""
+        atributos = [{}]
+        atributos += [{"values": valor} for valor in [None, {}, "registros", 1, []]]
+
+        for valor in atributos:
+            with self.subTest(atributos=valor):
+                self._comprobar_datos_invalidos({
+                    "included": [{"id": "1001", "attributes": valor}],
+                })
 
     def test_consulta_la_fecha_y_devuelve_el_pvpc_convertido(self):
         """Selecciona el PVPC aunque no sea la primera serie de la respuesta."""

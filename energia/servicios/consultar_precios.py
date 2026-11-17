@@ -19,6 +19,8 @@ def obtener_precios(fecha):
 
     Recibe la fecha en formato YYYY-MM-DD. Propaga los errores de conexión,
     de estado HTTP y de validación para que quien la llame pueda tratarlos.
+    Exige un objeto JSON con una lista included y una serie PVPC identificable;
+    los atributos y registros necesarios se validan antes de utilizarlos.
     """
     parametros = {
         "start_date": f"{fecha}T00:00",
@@ -34,10 +36,33 @@ def obtener_precios(fecha):
     respuesta.raise_for_status()
     datos = respuesta.json()
 
+    if not isinstance(datos, dict):
+        raise ValueError("La respuesta de REData debe ser un objeto JSON.")
+
+    series = datos.get("included")
+    if not isinstance(series, list):
+        raise ValueError("La respuesta de REData debe contener una lista de series.")
+
     # Identificamos el PVPC por su ID, sin depender del orden de las series.
-    for serie in datos["included"]:
-        if str(serie["id"]) == "1001":
-            registros_pvpc = serie["attributes"]["values"]
+    for serie in series:
+        if not isinstance(serie, dict):
+            raise ValueError("Cada serie de REData debe ser un objeto JSON.")
+
+        identificador = serie.get("id")
+        if (
+            isinstance(identificador, bool)
+            or not isinstance(identificador, (str, int))
+            or identificador == ""
+        ):
+            raise ValueError("Cada serie debe contener un identificador válido.")
+
+        if str(identificador) == "1001":
+            atributos = serie.get("attributes")
+            if not isinstance(atributos, dict):
+                raise ValueError("La serie PVPC debe contener un objeto de atributos.")
+
+            # El adaptador comprueba que values sea una lista no vacía de registros.
+            registros_pvpc = atributos.get("values")
             break
     else:
         # El else del for se ejecuta si no hemos encontrado la serie con break.

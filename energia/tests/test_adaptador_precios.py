@@ -33,6 +33,49 @@ class TestConvertirPrecios(unittest.TestCase):
         for precio in precios.values():
             self.assertIsInstance(precio, Decimal)
 
+    def test_rechaza_contenedor_de_registros_invalido(self):
+        """Exige una lista no vacía para evitar resultados parciales o ambiguos."""
+        for registros in [None, {}, "", "PVPC", 0, True, (), []]:
+            with self.subTest(registros=registros):
+                with self.assertRaises(ValueError):
+                    convertir_precios(registros, fecha_esperada=self.fecha)
+
+    def test_rechaza_registros_que_no_son_objetos(self):
+        """Un registro inesperado invalida la muestra aunque otros sean correctos."""
+        for registro in [None, [], "registro", 18, True]:
+            with self.subTest(registro=registro):
+                with self.assertRaises(ValueError):
+                    convertir_precios(
+                        self.registros + [registro], fecha_esperada=self.fecha
+                    )
+
+    def test_rechaza_fecha_hora_ausente_o_no_textual(self):
+        """datetime debe existir como texto antes de intentar interpretar su fecha."""
+        registros = [{"value": 100}]
+        registros += [
+            {"datetime": valor, "value": 100}
+            for valor in [None, 123, True, [], {}]
+        ]
+
+        for registro in registros:
+            with self.subTest(registro=registro):
+                with self.assertRaisesRegex(ValueError, "fecha y hora"):
+                    convertir_precios([registro], fecha_esperada=self.fecha)
+
+    def test_rechaza_fecha_hora_de_formato_invalido(self):
+        """Rechaza fechas sin hora y marcas temporales que no cumplen el formato."""
+        fechas = [
+            "", "no es una fecha", "2026-11-15", "15/11/2026 18:00",
+            "2026-11-15T25:00:00+01:00", "2026-13-15T18:00:00+01:00",
+        ]
+
+        for fecha in fechas:
+            with self.subTest(fecha=fecha):
+                registro = {"datetime": fecha, "value": 100}
+
+                with self.assertRaisesRegex(ValueError, "fecha y hora"):
+                    convertir_precios([registro], fecha_esperada=self.fecha)
+
     def test_conserva_precios_negativos_y_cero(self):
         """No redondea a cero ni elimina los precios negativos al convertirlos."""
         registros = [

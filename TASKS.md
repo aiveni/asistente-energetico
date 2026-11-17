@@ -6,6 +6,7 @@ Proyecto personal de portfolio: motor Python y web pública con Django.
 Trabajamos al ritmo de Aitor, una tarea cada vez, explicando qué hacemos y por qué.
 Aitor ejecuta los pasos y escribe el código con ayuda. El asistente solo modifica
 archivos cuando Aitor lo pide expresamente, como esta lista.
+Crear commits únicamente cuando Aitor lo autorice expresamente.
 
 Marcar `[x]` únicamente cuando el resultado esté comprobado. Mantener pendientes
 las tareas que solo estén propuestas. Actualizar esta lista conforme avancemos.
@@ -67,11 +68,13 @@ del horario indicado, con un ejemplo verificable a mano.
 - [x] Ejecutar las 17 pruebas del proyecto: todas correctas, sin conexión a la API.
 - [x] Guardar la integración de precios reales en el commit `5da5905`.
 - [x] Actualizar el README con la consulta real, su ejecución y sus limitaciones actuales.
-- [ ] Normalizar y validar la zona Europe/Madrid antes de admitir fechas arbitrarias.
+- [ ] Normalizar y validar la zona Europe/Madrid antes de admitir fechas arbitrarias. **Siguiente paso guiado.**
 - [ ] Definir soporte o rechazo explícito de días con cambio de hora y horarios que crucen medianoche.
 - [x] Rechazar precios ausentes, no numéricos, booleanos, NaN e infinitos en el adaptador, conservando cero y negativos.
 - [x] Probar la precisión de enteros y Decimal y el error web con una respuesta HTTP de precios inválidos.
-- [ ] Validar la estructura de respuestas vacías o malformadas antes de calcular. **Siguiente paso guiado.**
+- [x] Validar la estructura utilizada: objeto raíz, included, ID de serie, attributes y lista no vacía de values.
+- [x] Rechazar registros de tipo inesperado o sin datetime textual ISO con separador T y hora válida.
+- [x] Probar cuerpos vacíos, HTML, JSON truncado y errores de estructura desde servicios y web.
 - [ ] Definir cómo detectar datos caducados y qué mostrar si faltan precios o falla la API.
 
 ## 4. Construir y publicar el planificador Django
@@ -92,6 +95,7 @@ del horario indicado, con un ejemplo verificable a mano.
 - [x] Comprobar que una búsqueda correcta después de un fallo muestra el resultado y elimina el error.
 - [x] Ejecutar las 24 pruebas sin red: siete del recorrido web y 17 de servicios.
 - [x] Ejecutar las 29 pruebas sin red después de validar precios: once del adaptador y ocho de web.
+- [x] Ejecutar las 40 pruebas sin red después de validar estructuras: quince del adaptador, diez de consulta y nueve de web.
 - [ ] Mejorar la presentación del formulario y del resultado para su uso público.
 - [ ] Configurar comprobaciones automáticas en GitHub Actions al preparar el remoto.
 - [ ] Preparar la configuración de producción: secretos, DEBUG, hosts y HTTPS.
@@ -126,8 +130,10 @@ del horario indicado, con un ejemplo verificable a mano.
   la web pública y detectar errores antes de publicar cambios.
 - **Validación de fecha y hora exacta en el adaptador:** evita mezclar días o convertir
   un registro de las 18:15 en un precio de la hora completa de las 18.
-- **Zona horaria y respuestas malformadas:** pendientes antes de
-  admitir consultas generales; evitan cálculos con fechas mal interpretadas o datos inválidos.
+- **Zona horaria:** pendiente antes de admitir consultas generales; evita cálculos
+  con fechas y horas locales mal interpretadas.
+- **Validación de estructura:** transforma los campos ausentes y tipos inesperados
+  en errores de datos controlados antes de acceder a ellos o calcular precios.
 - **Precios numéricos y finitos:** impide que un valor ausente, un booleano, NaN o
   un infinito llegue al motor y genere un error de servidor o una recomendación incorrecta.
 - **Versionar esta lista fuera de `_local/`:** permite revisar el progreso en Git sin
@@ -163,3 +169,8 @@ del horario indicado, con un ejemplo verificable a mano.
   reprodujo la aceptación indebida de NaN; después de corregirla, las 29 pruebas
   pasan. Se comprueba también el recorrido HTTP → adaptador → web sin internet.
   Pendiente la validación general de la estructura JSON y de la zona horaria.
+- **17-11-2026:** Validación de estructuras añadida a consulta y adaptador. La
+  prueba inicial reprodujo un TypeError al recibir null como raíz del JSON.
+  Tras añadir comprobaciones explícitas, las 40 pruebas pasan sin internet.
+  Se actualiza la documentación y se dejan los cambios sin commit por petición
+  de Aitor. Próximo paso: normalización y validación de zona horaria.

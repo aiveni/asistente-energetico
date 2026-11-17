@@ -1,5 +1,6 @@
 """Pruebas HTTP del formulario, el resultado y los errores con datos simulados."""
 
+import json
 from decimal import Decimal
 from unittest.mock import patch
 
@@ -194,3 +195,42 @@ class TestInicio(SimpleTestCase):
         self.assertEqual(segunda.context["resultado"]["inicio"], 20)
         self.assertEqual(segunda.context["resultado"]["coste"], Decimal("0.44651"))
         self.assertEqual(consulta.call_count, 2)
+
+    @patch("energia.servicios.consultar_precios.httpx.get")
+    def test_respuesta_malformada_muestra_error_sin_recomendacion(self, consulta):
+        """Un cuerpo inválido recorre consulta y adaptador sin provocar un error 500."""
+        datos_invalidos = [
+            None,
+            {},
+            {"included": None},
+            {"included": [None]},
+            {"included": [{"id": "1001", "attributes": None}]},
+            {"included": [{"id": "1001", "attributes": {"values": {}}}]},
+            {"included": [{"id": "1001", "attributes": {"values": []}}]},
+            {"included": [{"id": "1001", "attributes": {"values": [None]}}]},
+            {"included": [{"id": "1001", "attributes": {"values": [
+                {"value": 100},
+            ]}}]},
+            {"included": [{"id": "1001", "attributes": {"values": [
+                {"datetime": None, "value": 100},
+            ]}}]},
+        ]
+        contenidos = ["", "<html>Servicio no disponible</html>"]
+        contenidos += [json.dumps(datos) for datos in datos_invalidos]
+
+        for contenido in contenidos:
+            with self.subTest(contenido=contenido):
+                consulta.reset_mock()
+                consulta.return_value = httpx.Response(
+                    200,
+                    text=contenido,
+                    request=httpx.Request("GET", "https://apidatos.ree.es"),
+                )
+
+                respuesta = self.client.get(reverse("inicio"), self.busqueda)
+
+                self._comprobar_error_sin_resultado(
+                    respuesta,
+                    "No hay datos horarios utilizables para esa fecha y horario.",
+                )
+                consulta.assert_called_once()

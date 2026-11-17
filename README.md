@@ -71,13 +71,14 @@ Los ejemplos se ejecutan como módulos (`-m`) porque ahora pertenecen al paquete
 uv run python manage.py test -v 2
 ```
 
-Actualmente hay 29 pruebas: seis del motor, once del adaptador, cuatro de la
-consulta HTTP simulada y ocho del recorrido web. Las pruebas web no usan una
+Actualmente hay 40 pruebas: seis del motor, quince del adaptador, diez de la
+consulta HTTP simulada y nueve del recorrido web. Las pruebas web no usan una
 base de datos. El comando prepara la configuración de Django para ejecutarlas.
 
 Se comprueba que los fallos de conexión, timeout, estado HTTP y los datos no
 utilizables muestran un error sin recomendación, conservan los campos y permiten
-repetir la búsqueda. El tratamiento general de respuestas malformadas sigue pendiente.
+repetir la búsqueda. También se prueban cuerpos vacíos, HTML, JSON truncado,
+campos ausentes, tipos inesperados y registros sin una fecha y hora válida.
 
 ## Estructura
 
@@ -117,16 +118,16 @@ están en [docs/decisiones.md](docs/decisiones.md).
 - En caso de empate, elige la primera franja.
 - Rechaza registros de otro día, fuera del inicio de una hora o con horas repetidas.
 - Rechaza precios ausentes, texto, booleanos, NaN e infinitos; conserva cero y negativos.
+- Valida los campos utilizados de la respuesta JSON y exige una lista no vacía
+  de registros con fecha y hora ISO de texto y separador T.
 - No cruza medianoche ni tiene soporte completo de días con cambio de hora.
-- La normalización a Europe/Madrid y el tratamiento de respuestas malformadas
-  y datos caducados siguen pendientes.
+- La normalización a Europe/Madrid y el tratamiento de datos caducados siguen pendientes.
 - Cada búsqueda válida consulta REData; todavía no hay caché de precios.
 - Los ajustes de Django son de desarrollo local; la preparación de producción
   se registra como pendiente en TASKS.md.
 
 ## Próximos pasos
 
-1. Validar la estructura de respuestas incompletas o malformadas antes del cálculo.
-2. Revisar zona horaria, cambios de hora y actualización de precios.
-3. Mejorar la presentación, preparar CI y publicar el planificador.
-4. Añadir el chat después del planificador público.
+1. Revisar zona horaria, cambios de hora y actualización de precios.
+2. Mejorar la presentación, preparar CI y publicar el planificador.
+3. Añadir el chat después del planificador público.

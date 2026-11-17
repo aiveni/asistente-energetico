@@ -8,6 +8,7 @@ El objetivo es un asistente energético público de portfolio. El orden acordado
 es entorno Windows con Git y uv, motor ficticio, datos reales, planificador web
 y chat. El asistente del paro queda aplazado. Aitor avanza por pasos y comprende
 el motivo de cada decisión; los cambios del asistente se hacen cuando se solicitan.
+Los commits solo se crean con autorización expresa de Aitor.
 
 ## Motor determinista separado de la web
 
@@ -38,8 +39,17 @@ negativos siguen siendo válidos; esta comprobación se hace antes de operar.
 
 La conversión se puede probar sin acceder a la API. Los errores HTTP y de espera
 se propagan hasta quien llama; la vista los convierte en mensajes del formulario.
-La normalización de zona horaria, los cambios de hora y las respuestas malformadas
-siguen siendo trabajo pendiente: ordenar el código no añade ese soporte.
+La consulta comprueba que la raíz JSON sea un objeto, included una lista y cada
+serie tenga un ID de texto o entero. Para el PVPC exige un objeto attributes.
+El adaptador exige que values sea una lista no vacía de objetos con datetime
+como texto ISO con separador T, incluyendo una hora interpretable. Los metadatos
+que no se utilizan no son obligatorios.
+
+Estas comprobaciones se hacen antes de acceder a cada campo. Así se comunica
+ValueError ante datos inesperados sin capturar indiscriminadamente otros errores
+del programa. Los cuerpos vacíos, HTML y JSON truncado ya producen ValueError al
+decodificar la respuesta. La vista conserva la búsqueda y muestra el error de datos.
+La normalización de zona horaria y el soporte completo de cambios de hora siguen pendientes.
 
 ## Organización dentro de la app energia
 
@@ -68,8 +78,8 @@ y Django 6.1.3. `.venv`, la base SQLite local y los documentos de `_local/` se
 excluyen de Git. Las tablas incluidas por Django no implican tener modelos
 propios ni almacenamiento de los precios consultados.
 
-Las pruebas se ejecutan con `python manage.py test`. Son 29: motor (6), adaptador
-(11), consulta HTTP (4) y web (8). Las llamadas externas se simulan para comprobar
+Las pruebas se ejecutan con `python manage.py test`. Son 40: motor (6), adaptador
+(15), consulta HTTP (10) y web (9). Las llamadas externas se simulan para comprobar
 éxitos y errores sin depender de la disponibilidad de REData. Las pruebas de
 la web utilizan SimpleTestCase porque este recorrido no accede a una base de datos.
 
@@ -79,7 +89,8 @@ el motor real, la conservación de los campos y una búsqueda correcta después
 de un fallo. Una prueba adicional recorre la consulta y el adaptador reales con
 una respuesta HTTP simulada que contiene precios inválidos, incluido 1e999,
 que el lector JSON convierte en infinito. La web muestra el error sin producir
-una recomendación. El tratamiento general de estructuras malformadas sigue pendiente.
+una recomendación. También se comprueba el recorrido con cuerpos vacíos, HTML,
+estructuras JSON inesperadas y registros sin fecha de texto, sin mostrar un error 500.
 
 ## Documentación y skills
 
