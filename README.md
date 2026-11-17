@@ -71,9 +71,13 @@ Los ejemplos se ejecutan como módulos (`-m`) porque ahora pertenecen al paquete
 uv run python manage.py test -v 2
 ```
 
-Actualmente hay 20 pruebas: seis del motor, siete del adaptador, cuatro de la
-consulta HTTP simulada y tres del recorrido web. Las pruebas web no usan una
+Actualmente hay 24 pruebas: seis del motor, siete del adaptador, cuatro de la
+consulta HTTP simulada y siete del recorrido web. Las pruebas web no usan una
 base de datos. El comando prepara la configuración de Django para ejecutarlas.
+
+Se comprueba que los fallos de conexión, timeout, estado HTTP y los datos no
+utilizables muestran un error sin recomendación, conservan los campos y permiten
+repetir la búsqueda. El tratamiento general de respuestas malformadas sigue pendiente.
 
 ## Estructura
 
@@ -121,7 +125,7 @@ están en [docs/decisiones.md](docs/decisiones.md).
 
 ## Próximos pasos
 
-1. Completar el tratamiento de errores de datos y sus mensajes en la web.
+1. Validar precios no finitos y respuestas malformadas antes del cálculo.
 2. Revisar zona horaria, cambios de hora y actualización de precios.
 3. Mejorar la presentación, preparar CI y publicar el planificador.
 4. Añadir el chat después del planificador público.

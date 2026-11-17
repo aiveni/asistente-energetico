@@ -69,7 +69,7 @@ del horario indicado, con un ejemplo verificable a mano.
 - [x] Actualizar el README con la consulta real, su ejecución y sus limitaciones actuales.
 - [ ] Normalizar y validar la zona Europe/Madrid antes de admitir fechas arbitrarias.
 - [ ] Definir soporte o rechazo explícito de días con cambio de hora y horarios que crucen medianoche.
-- [ ] Tratar respuestas vacías o malformadas y precios no finitos antes de calcular.
+- [ ] Tratar respuestas vacías o malformadas y precios no finitos antes de calcular. **Siguiente paso guiado: validar los precios recibidos.**
 - [ ] Definir cómo detectar datos caducados y qué mostrar si faltan precios o falla la API.
 
 ## 4. Construir y publicar el planificador Django
@@ -86,7 +86,9 @@ del horario indicado, con un ejemplo verificable a mano.
 - [x] Ejecutar las 20 pruebas sin red y el ejemplo ficticio después de la reorganización.
 - [ ] Decidir cómo almacenar y actualizar los precios según la necesidad real.
 - [x] Probar el recorrido completo con precios simulados: formulario → cálculo → resultado.
-- [ ] Probar que la web muestra mensajes ante fallos de la API o datos no utilizables. **Siguiente paso guiado.**
+- [x] Probar mensajes, conservación de campos y ausencia de recomendación ante fallos HTTP, ValueError y precios vacíos o incompletos.
+- [x] Comprobar que una búsqueda correcta después de un fallo muestra el resultado y elimina el error.
+- [x] Ejecutar las 24 pruebas sin red: siete del recorrido web y 17 de servicios.
 - [ ] Mejorar la presentación del formulario y del resultado para su uso público.
 - [ ] Configurar comprobaciones automáticas en GitHub Actions al preparar el remoto.
 - [ ] Preparar la configuración de producción: secretos, DEBUG, hosts y HTTPS.
@@ -148,3 +150,7 @@ del horario indicado, con un ejemplo verificable a mano.
   Servicios y pruebas reorganizados en `985c15d`, conservando el ejemplo ficticio
   y el resultado real de muestra. README, decisiones y tareas actualizados.
   Publicación y chat siguen pendientes.
+- **17-11-2026:** Añadidas cuatro pruebas web con casos de conexión, timeout,
+  HTTP 503, errores de datos, precios vacíos o incompletos y reintento correcto.
+  Las 24 pruebas pasan sin internet. La vista ya gestionaba estos casos, por lo
+  que se conserva su lógica. Próximo paso: validar los precios recibidos.

@@ -62,10 +62,16 @@ y Django 6.1.3. `.venv`, la base SQLite local y los documentos de `_local/` se
 excluyen de Git. Las tablas incluidas por Django no implican tener modelos
 propios ni almacenamiento de los precios consultados.
 
-Las pruebas se ejecutan con `python manage.py test`. Son 20: motor (6), adaptador
-(7), consulta HTTP (4) y web (3). Las llamadas externas se simulan para comprobar
+Las pruebas se ejecutan con `python manage.py test`. Son 24: motor (6), adaptador
+(7), consulta HTTP (4) y web (7). Las llamadas externas se simulan para comprobar
 éxitos y errores sin depender de la disponibilidad de REData. Las pruebas de
 la web utilizan SimpleTestCase porque este recorrido no accede a una base de datos.
+
+Las pruebas web incluyen fallos de conexión, timeout, estado HTTP 503 y errores
+de validación del servicio. También comprueban precios vacíos o incompletos con
+el motor real, la conservación de los campos y una búsqueda correcta después
+de un fallo. Esto verifica los errores que la vista ya gestiona; no añade soporte
+general para datos malformados ni precios no finitos.
 
 ## Documentación y skills
 
