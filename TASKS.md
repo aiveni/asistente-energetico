@@ -77,7 +77,8 @@ del horario indicado, con un ejemplo verificable a mano.
 - [x] Validar la estructura utilizada: objeto raíz, included, ID de serie, attributes y lista no vacía de values.
 - [x] Rechazar registros de tipo inesperado o sin datetime textual ISO con separador T y hora válida.
 - [x] Probar cuerpos vacíos, HTML, JSON truncado y errores de estructura desde servicios y web.
-- [ ] Definir cómo detectar datos caducados y qué mostrar si faltan precios o falla la API.
+- [x] Definir caducidad de la copia local: cinco minutos desde la descarga, mostrando error si falla la actualización tras vencer.
+- [ ] Revisar la antigüedad de la publicación de la fuente, distinta de la caducidad de nuestra caché.
 
 ## 4. Construir y publicar el planificador Django
 
@@ -91,7 +92,10 @@ del horario indicado, con un ejemplo verificable a mano.
 - [x] Agrupar cálculo y consulta en `energia/servicios/`, y todas las pruebas en `energia/tests/`.
 - [x] Actualizar imports, rutas de patch y comandos después de mover archivos.
 - [x] Ejecutar las 20 pruebas sin red y el ejemplo ficticio después de la reorganización.
-- [ ] Decidir cómo almacenar y actualizar los precios según la necesidad real. **Siguiente paso guiado: reutilización por fecha y caducidad.**
+- [x] Reutilizar días completos por fecha en una caché en memoria de Django con duración configurable.
+- [x] Mantener la caché en la capa web y los servicios independientes de Django.
+- [x] Evitar guardar errores y datos parciales; reconsultar al caducar sin servir la copia vencida.
+- [ ] Elegir un backend de caché compartido al preparar el despliegue con varios procesos.
 - [x] Probar el recorrido completo con precios simulados: formulario → cálculo → resultado.
 - [x] Probar mensajes, conservación de campos y ausencia de recomendación ante fallos HTTP, ValueError y precios vacíos o incompletos.
 - [x] Comprobar que una búsqueda correcta después de un fallo muestra el resultado y elimina el error.
@@ -100,7 +104,8 @@ del horario indicado, con un ejemplo verificable a mano.
 - [x] Ejecutar las 40 pruebas sin red después de validar estructuras: quince del adaptador, diez de consulta y nueve de web.
 - [x] Configurar TIME_ZONE en Europe/Madrid y mostrar la zona y la limitación de cambios de hora en el formulario.
 - [x] Ejecutar las 51 pruebas sin red tras normalizar: veintidós del adaptador, once de consulta y doce de web.
-- [ ] Mejorar la presentación del formulario y del resultado para su uso público.
+- [x] Ejecutar las 59 pruebas: reutilización entre horarios, caducidad sin esperas y recuperación tras respuestas parciales.
+- [ ] Mejorar la presentación del formulario y del resultado para su uso público. **Siguiente paso guiado.**
 - [ ] Configurar comprobaciones automáticas en GitHub Actions al preparar el remoto.
 - [ ] Preparar la configuración de producción: secretos, DEBUG, hosts y HTTPS.
 - [ ] Elegir alojamiento, revisar costes y decidir el despliegue con Aitor.
@@ -123,6 +128,11 @@ del horario indicado, con un ejemplo verificable a mano.
 - [ ] Retomar el asistente del paro únicamente cuando se decida expresamente.
 
 ## Tareas necesarias añadidas y qué resuelven
+
+- **Caché de días completos:** reduce descargas repetidas y permite recuperar datos
+  parciales en la siguiente petición. El plazo máximo evita reutilizar la copia indefinidamente.
+- **Backend compartido para producción:** permite que varios procesos del servidor
+  reutilicen los mismos precios; la memoria local de desarrollo no se comparte.
 
 - **Contrato del cálculo y casos límite:** evitan resultados ambiguos o recomendaciones
   hechas con datos insuficientes.
@@ -187,3 +197,8 @@ del horario indicado, con un ejemplo verificable a mano.
   se exige desplazamiento UTC y se rechazan días con cambio de hora. Se declara
   tzdata como dependencia directa y se alinea Django y el formulario con la zona.
   Las 51 pruebas pasan. La normalización queda sin commit para revisión.
+- **17-11-2026:** Normalización guardada con autorización en `b8381b8`. Se añade
+  `energia/cache_precios.py`, se integra en la vista y se configura LocMemCache
+  con duración inicial de cinco minutos. Se guardan solo días completos y se
+  mantienen los servicios sin dependencia de Django. Las 59 pruebas pasan;
+  el reloj se simula para comprobar la caducidad. Cambios de caché sin commit.

@@ -84,6 +84,10 @@ subcarpetas permiten encontrar cada pieza sin introducir otra herramienta.
 `templates/energia/` presenta la respuesta. `config/` conserva la configuración
 general de Django. Los paquetes de servicios no importan Django.
 
+`energia/cache_precios.py` integra la caché de Django por encima de la consulta.
+Así la descarga, la adaptación y el cálculo siguen siendo reutilizables sin
+configuración web. La vista llama a obtener_precios_con_cache y luego al motor.
+
 Los imports y las rutas de patch en las pruebas cambian con los módulos movidos.
 Los ejemplos se ejecutan desde la raíz mediante `python -m energia.servicios.motor`
 y `python -m energia.servicios.consultar_precios`.
@@ -94,6 +98,26 @@ La búsqueda consulta información sin modificar registros de negocio. GET conse
 fecha y horario en la URL para repetir o compartir la búsqueda. Primero se valida
 el formulario; una petición vacía o inválida no debe consultar precios.
 
+## Caché diaria y caducidad
+
+La web reutiliza precios de un día completo durante 300 segundos desde su
+descarga. Es una política inicial de desarrollo, configurable con
+PRECIOS_CACHE_TIMEOUT, sin renovar el plazo en cada lectura. La clave identifica
+el indicador 1001, sistema 8741, Europe/Madrid, versión del formato y fecha.
+El resultado de la recomendación se calcula para cada horario.
+
+Se guarda únicamente un diccionario con las 24 horas, después de la validación
+del servicio. Una respuesta parcial se entrega al motor para que compruebe el
+horario solicitado, pero no se guarda; esto permite volver a consultar si la
+fuente completa los datos. Las excepciones tampoco se guardan. Si una copia
+caduca y falla la actualización, se muestra el error en lugar de servir esa copia.
+
+LocMemCache permite practicar este comportamiento sin instalar otro servicio.
+La copia es temporal y por proceso; antes de publicar con varios procesos habrá
+que decidir un backend compartido. La caducidad de la copia no equivale a validar
+la fecha de última publicación de REData. Referencia:
+[caché de Django](https://docs.djangoproject.com/en/6.1/topics/cache/).
+
 ## Dependencias y comprobaciones
 
 uv gestiona `pyproject.toml` y `uv.lock`. La instalación actual usa Python 3.15.2
@@ -101,8 +125,8 @@ y Django 6.1.3. `.venv`, la base SQLite local y los documentos de `_local/` se
 excluyen de Git. Las tablas incluidas por Django no implican tener modelos
 propios ni almacenamiento de los precios consultados.
 
-Las pruebas se ejecutan con `python manage.py test`. Son 51: motor (6), adaptador
-(22), consulta HTTP (11) y web (12). Las llamadas externas se simulan para comprobar
+Las pruebas se ejecutan con `python manage.py test`. Son 59: motor (6), adaptador
+(22), consulta HTTP (11), web (14) y caché (6). Las llamadas externas se simulan para comprobar
 éxitos y errores sin depender de la disponibilidad de REData. Las pruebas de
 la web utilizan SimpleTestCase porque este recorrido no accede a una base de datos.
 
@@ -118,6 +142,11 @@ Las pruebas de normalización verifican los resultados de invierno y verano, el
 cambio de fecha entre UTC y Madrid, los duplicados tras convertir y el rechazo
 de registros sin zona y días con cambio de hora. La muestra real mantiene 20–22
 y 0,44651 euros aunque sus marcas se expresen en UTC.
+
+Las pruebas de caché utilizan un backend en memoria aislado y simulan el reloj,
+sin dormir. Comprueban que leer no prolongue la caducidad y que no se guarden
+errores ni datos parciales. Un recorrido web prueba dos horarios distintos con
+una sola descarga, y otro recupera un día completo después de una respuesta parcial.
 
 ## Documentación y skills
 

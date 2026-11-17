@@ -7,7 +7,7 @@ más baratas con precios PVPC peninsulares de Red Eléctrica.
 ## Qué hace actualmente
 
 La página recibe fecha y horas mediante un formulario GET, valida la búsqueda,
-consulta REData y muestra la franja recomendada. También incluye un ejemplo
+obtiene precios desde la caché o REData y muestra la franja recomendada. También incluye un ejemplo
 ficticio que se puede comprobar a mano y pruebas que funcionan sin internet.
 
 El cálculo supone una potencia constante de 1 kW. El coste mostrado
@@ -43,8 +43,9 @@ en la base SQLite local. Todavía no hay modelos propios de consumo o precios.
 `db.sqlite3` está excluido de Git.
 
 Abre http://127.0.0.1:8000/ y elige una fecha y un horario dentro del mismo día.
-Para detener el servidor, pulsa Ctrl+C. La consulta real necesita conexión a
-internet; las pruebas automáticas utilizan respuestas simuladas.
+Para detener el servidor, pulsa Ctrl+C. Las descargas y actualizaciones necesitan
+internet; una copia vigente permite reutilizar los precios. Las pruebas automáticas
+utilizan respuestas simuladas.
 
 ## Ejecutar los ejemplos desde la terminal
 
@@ -64,6 +65,7 @@ uv run python -m energia.servicios.consultar_precios
 ```
 
 La muestra revisada para 18:00–22:00 da 20:00–22:00 y 0,44651 € a 1 kW.
+Este comando consulta REData directamente; la caché se incorpora en la capa web.
 Los ejemplos se ejecutan como módulos (`-m`) porque ahora pertenecen al paquete
 `energia.servicios` y utilizan sus imports internos.
 
@@ -73,8 +75,8 @@ Los ejemplos se ejecutan como módulos (`-m`) porque ahora pertenecen al paquete
 uv run python manage.py test -v 2
 ```
 
-Actualmente hay 51 pruebas: seis del motor, veintidós del adaptador, once de la
-consulta HTTP simulada y doce del recorrido web. Las pruebas web no usan una
+Actualmente hay 59 pruebas: seis del motor, veintidós del adaptador, once de la
+consulta HTTP simulada, catorce del recorrido web y seis de caché. Las pruebas web no usan una
 base de datos. El comando prepara la configuración de Django para ejecutarlas.
 
 Se comprueba que los fallos de conexión, timeout, estado HTTP y los datos no
@@ -83,6 +85,9 @@ repetir la búsqueda. También se prueban cuerpos vacíos, HTML, JSON truncado,
 campos ausentes, tipos inesperados y registros sin una fecha y hora válida.
 Las pruebas de zona horaria cubren invierno, verano, UTC, cambios de fecha al
 convertir, ausencia de desplazamiento y rechazo de días con cambio de hora.
+Las pruebas de caché verifican reutilización por fecha, caducidad con un reloj
+simulado y reintentos tras errores o datos incompletos. Cada prueba usa una caché
+aislada para evitar resultados que dependan de pruebas anteriores.
 
 ## Estructura
 
@@ -91,6 +96,7 @@ config/                        Configuración y rutas generales de Django
 energia/
     forms.py                   Campos y validaciones del formulario
     views.py                   Coordinación entre formulario, servicios y plantilla
+    cache_precios.py            Reutilización temporal de precios mediante Django
     urls.py                    Rutas de la aplicación
     servicios/
         motor.py               Cálculo independiente de Django y de la red
@@ -108,6 +114,24 @@ TASKS.md                       Progreso y trabajo pendiente
 Los servicios se pueden importar sin iniciar peticiones HTTP ni cargar Django.
 Las vistas los utilizan y presentan el resultado. Los motivos de esta separación
 están en [docs/decisiones.md](docs/decisiones.md).
+
+## Caché de precios de la web
+
+`energia/cache_precios.py` guarda días completos con las 24 horas ya validadas.
+La clave identifica PVPC, sistema peninsular, zona, formato y fecha. Cambiar el
+horario reutiliza esos precios y ejecuta de nuevo el cálculo de la franja.
+
+La política inicial es de cinco minutos desde la descarga, configurables mediante
+`PRECIOS_CACHE_TIMEOUT` en `config/settings.py`. Leer la copia no renueva el plazo.
+Al caducar se vuelve a consultar REData; si falla, la web muestra el error sin
+servir la copia vencida. Los errores y precios incompletos no se guardan. Una
+muestra parcial puede resolver un horario completo, pero la siguiente petición
+volverá a consultar la fuente.
+
+Se usa la [caché en memoria de Django](https://docs.djangoproject.com/en/6.1/topics/cache/#local-memory-caching)
+para desarrollo: es por proceso y se pierde al reiniciar. El backend compartido
+para producción queda pendiente. Esta caché evita descargas repetidas; su plazo
+no certifica la fecha de última publicación de los datos en la fuente.
 
 ## Fuente de datos
 
@@ -130,13 +154,14 @@ están en [docs/decisiones.md](docs/decisiones.md).
 - No cruza medianoche. Rechaza todos los días con cambio de hora en esta versión,
   incluso si el horario solicitado queda fuera del salto, porque el motor representa
   días normales de 24 horas. La web informa de esta limitación.
-- El tratamiento de datos caducados sigue pendiente.
-- Cada búsqueda válida consulta REData; todavía no hay caché de precios.
+- Queda pendiente revisar la antigüedad de la publicación de la fuente, distinta
+  de la caducidad de cinco minutos de nuestra copia.
+- La caché es local al proceso; el backend para producción se decidirá al desplegar.
 - Los ajustes de Django son de desarrollo local; la preparación de producción
   se registra como pendiente en TASKS.md.
 
 ## Próximos pasos
 
-1. Decidir cómo reutilizar precios por fecha y cuándo actualizarlos.
-2. Mejorar la presentación, preparar CI y publicar el planificador.
+1. Mejorar la presentación del formulario y del resultado.
+2. Preparar CI, revisar los ajustes de producción y publicar el planificador.
 3. Añadir el chat después del planificador público.

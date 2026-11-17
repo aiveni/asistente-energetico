@@ -3,16 +3,16 @@
 import httpx
 from django.shortcuts import render
 
+from .cache_precios import obtener_precios_con_cache
 from .forms import FranjaForm
-from .servicios.consultar_precios import obtener_precios
 from .servicios.motor import buscar_mejor_franja
 
 
 def inicio(request):
     """Muestra el formulario GET y calcula si fecha y horario son válidos.
 
-    Utiliza los servicios de precios y cálculo, y entrega el resultado a la
-    plantilla. Los errores HTTP y de datos se muestran como errores generales
+    Reutiliza los precios mediante la caché y calcula cada horario por separado.
+    Entrega el resultado a la plantilla. Los errores HTTP y de datos se muestran como errores generales
     del formulario, conservando los valores introducidos.
     """
     formulario = FranjaForm(request.GET or None)
@@ -23,7 +23,7 @@ def inicio(request):
         fecha = datos["fecha"]
 
         try:
-            precios = obtener_precios(fecha.isoformat())
+            precios = obtener_precios_con_cache(fecha.isoformat())
             hora, coste = buscar_mejor_franja(
                 precios,
                 inicio=datos["inicio"],

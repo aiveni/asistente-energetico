@@ -106,6 +106,18 @@ USE_I18N = True
 USE_TZ = True
 
 
+# Caché local por proceso para reutilizar precios; se vacía al reiniciar el servidor.
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'energia-precios-local',
+    }
+}
+
+# Política inicial de desarrollo: cinco minutos desde la descarga, sin renovación al leer.
+PRECIOS_CACHE_TIMEOUT = 5 * 60
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
