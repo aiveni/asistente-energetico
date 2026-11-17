@@ -105,8 +105,14 @@ del horario indicado, con un ejemplo verificable a mano.
 - [x] Configurar TIME_ZONE en Europe/Madrid y mostrar la zona y la limitación de cambios de hora en el formulario.
 - [x] Ejecutar las 51 pruebas sin red tras normalizar: veintidós del adaptador, once de consulta y doce de web.
 - [x] Ejecutar las 59 pruebas: reutilización entre horarios, caducidad sin esperas y recuperación tras respuestas parciales.
-- [ ] Mejorar la presentación del formulario y del resultado para su uso público. **Siguiente paso guiado.**
-- [ ] Configurar comprobaciones automáticas en GitHub Actions al preparar el remoto.
+- [x] Mejorar la presentación del formulario y del resultado con una interfaz adaptable a móvil.
+- [x] Mostrar selectores horarios legibles y convertir las opciones a enteros para el motor.
+- [x] Mostrar una tabla del horario solicitado con los dos intervalos elegidos destacados.
+- [x] Presentar importes en español, referencia de 1 kW y estados inicial y de error sin precios ficticios.
+- [x] Comprobar 64 pruebas y que Django encuentre `energia/estilos.css`.
+- [x] Revisar capturas locales de escritorio y móvil a 320 y 390 píxeles, sin desbordamiento horizontal.
+- [ ] Conectar un repositorio remoto de GitHub y realizar el primer push. **Siguiente paso guiado.**
+- [ ] Configurar comprobaciones automáticas en GitHub Actions después de conectar el remoto.
 - [ ] Preparar la configuración de producción: secretos, DEBUG, hosts y HTTPS.
 - [ ] Elegir alojamiento, revisar costes y decidir el despliegue con Aitor.
 - [ ] Publicar y comprobar que el planificador funciona desde fuera del equipo.
@@ -128,6 +134,13 @@ del horario indicado, con un ejemplo verificable a mano.
 - [ ] Retomar el asistente del paro únicamente cuando se decida expresamente.
 
 ## Tareas necesarias añadidas y qué resuelven
+
+- **Repositorio remoto:** permite conservar una copia en GitHub y ejecutar las
+  comprobaciones automáticas allí. El repositorio local todavía no tiene remoto.
+- **Tabla de precios y selección visible:** permite comprobar la recomendación
+  con los precios del horario elegido, sin confundirlos con otras horas del día.
+- **Selectores horarios y estados de pantalla:** facilitan una entrada válida y
+  mantienen las explicaciones y los campos cuando la búsqueda no se puede resolver.
 
 - **Caché de días completos:** reduce descargas repetidas y permite recuperar datos
   parciales en la siguiente petición. El plazo máximo evita reutilizar la copia indefinidamente.
@@ -202,3 +215,12 @@ del horario indicado, con un ejemplo verificable a mano.
   con duración inicial de cinco minutos. Se guardan solo días completos y se
   mantienen los servicios sin dependencia de Django. Las 59 pruebas pasan;
   el reloj se simula para comprobar la caducidad. Cambios de caché sin commit.
+- **17-11-2026:** Caché guardada con autorización en `96d3686`. Se prepara la
+  interfaz con formulario, recomendación destacada, tabla de precios y estados
+  inicial y de error. Se añaden selectores horarios y formato español. Las 64
+  pruebas pasan; el CSS se descubre correctamente. Revisadas capturas de HTML
+  renderizado con datos de prueba en escritorio y móvil, sin desbordamiento de
+  página a 320 y 390 píxeles. Cambios de interfaz sin commit para revisión.
+- **17-11-2026:** Aitor autoriza el commit de la interfaz. Se vuelven a ejecutar
+  las 64 pruebas y todas pasan. Se comprueba que Git no tiene remoto configurado;
+  se añade su conexión como paso previo a GitHub Actions.

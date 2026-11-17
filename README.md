@@ -14,6 +14,11 @@ El cálculo supone una potencia constante de 1 kW. El coste mostrado
 corresponde únicamente a la energía consumida durante esas dos horas, sin
 representar una factura completa. La web todavía no está publicada.
 
+La pantalla incluye selectores de horas, una tarjeta con la recomendación y una
+tabla de precios del horario consultado que destaca los dos intervalos elegidos.
+Los estados inicial y de error conservan una explicación sin inventar precios.
+La interfaz está en español y se adapta a escritorio y móvil.
+
 Progreso: [TASKS.md](TASKS.md). Motivos de la estructura y del cálculo:
 [docs/decisiones.md](docs/decisiones.md).
 
@@ -75,8 +80,9 @@ Los ejemplos se ejecutan como módulos (`-m`) porque ahora pertenecen al paquete
 uv run python manage.py test -v 2
 ```
 
-Actualmente hay 59 pruebas: seis del motor, veintidós del adaptador, once de la
-consulta HTTP simulada, catorce del recorrido web y seis de caché. Las pruebas web no usan una
+Actualmente hay 64 pruebas: seis del motor, veintidós del adaptador, once de la
+consulta HTTP simulada, dieciséis del recorrido web, seis de caché y tres del
+formulario. Las pruebas web no usan una
 base de datos. El comando prepara la configuración de Django para ejecutarlas.
 
 Se comprueba que los fallos de conexión, timeout, estado HTTP y los datos no
@@ -88,6 +94,9 @@ convertir, ausencia de desplazamiento y rechazo de días con cambio de hora.
 Las pruebas de caché verifican reutilización por fecha, caducidad con un reloj
 simulado y reintentos tras errores o datos incompletos. Cada prueba usa una caché
 aislada para evitar resultados que dependan de pruebas anteriores.
+La tabla se comprueba con precios de fuera del horario, precios negativos y el
+límite de las 24:00. Los selectores entregan enteros al motor y rechazan opciones
+fuera de rango y horarios inválidos.
 
 ## Estructura
 
@@ -104,6 +113,7 @@ energia/
         consultar_precios.py   Consulta HTTP a REData
     tests/                     Pruebas del motor, adaptador, consulta y web
     templates/energia/         Plantillas de esta aplicación
+    static/energia/            CSS de la interfaz, sin fuentes ni librerías externas
 docs/                          Decisiones y contexto técnico
 manage.py                      Entrada para los comandos de Django
 pyproject.toml                 Metadatos y dependencias del proyecto
@@ -114,6 +124,25 @@ TASKS.md                       Progreso y trabajo pendiente
 Los servicios se pueden importar sin iniciar peticiones HTTP ni cargar Django.
 Las vistas los utilizan y presentan el resultado. Los motivos de esta separación
 están en [docs/decisiones.md](docs/decisiones.md).
+
+## Interfaz y comprobación local
+
+`energia/templates/energia/inicio.html` presenta formulario, resultado y tabla.
+`energia/static/energia/estilos.css` contiene los estilos; Django lo sirve con
+runserver durante el desarrollo. Los selectores muestran horas como 18:00 y el
+formulario ofrece inicialmente la fecha local de hoy, sin consultar precios hasta
+que se envía la búsqueda.
+
+La vista prepara la tabla después de calcular correctamente. Solo incluye el
+horario solicitado y marca los dos intervalos recomendados. Los importes se
+muestran con cinco decimales y formato español; el cálculo mantiene los Decimal
+originales. Ante errores no se muestra la tabla ni una recomendación anterior.
+
+Se han revisado capturas de páginas renderizadas por Django con datos de prueba:
+estados inicial, resultado y error en escritorio, y resultado y error en móvil,
+incluidos anchos de 320 y 390 píxeles sin desbordamiento horizontal de la página.
+Las búsquedas se verifican automáticamente con el cliente de pruebas de Django.
+La preparación de los archivos estáticos para producción sigue pendiente.
 
 ## Caché de precios de la web
 
@@ -162,6 +191,6 @@ no certifica la fecha de última publicación de los datos en la fuente.
 
 ## Próximos pasos
 
-1. Mejorar la presentación del formulario y del resultado.
-2. Preparar CI, revisar los ajustes de producción y publicar el planificador.
+1. Preparar CI para ejecutar las pruebas al subir cambios al repositorio remoto.
+2. Revisar los ajustes de producción y publicar el planificador.
 3. Añadir el chat después del planificador público.

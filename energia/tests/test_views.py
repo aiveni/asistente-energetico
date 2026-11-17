@@ -34,6 +34,8 @@ class TestInicio(SimpleTestCase):
         self.assertContains(respuesta, mensaje)
         self.assertNotContains(respuesta, "Franja recomendada")
         self.assertIsNone(respuesta.context["resultado"])
+        self.assertEqual(respuesta.context["detalle_precios"], [])
+        self.assertNotContains(respuesta, "Precios de tu horario")
 
         formulario = respuesta.context["formulario"]
         self.assertEqual(list(formulario.non_field_errors()), [mensaje])
@@ -70,6 +72,8 @@ class TestInicio(SimpleTestCase):
         self.assertEqual(respuesta.status_code, 200)
         self.assertTemplateUsed(respuesta, "energia/inicio.html")
         self.assertFalse(respuesta.context["formulario"].is_bound)
+        self.assertEqual(respuesta.context["detalle_precios"], [])
+        self.assertNotContains(respuesta, "Precios de tu horario")
         consulta.assert_not_called()
 
     @patch("energia.views.obtener_precios_con_cache")
@@ -355,3 +359,46 @@ class TestInicio(SimpleTestCase):
         self.assertContains(tercera, "Franja recomendada")
         self.assertEqual(tercera.context["resultado"], segunda.context["resultado"])
         self.assertEqual(consulta.call_count, 2)
+
+    @patch("energia.views.obtener_precios_con_cache")
+    def test_tabla_muestra_solo_el_horario_y_destaca_dos_intervalos(self, consulta):
+        """La tabla permite verificar el resultado sin incluir precios de fuera del horario."""
+        consulta.return_value = {
+            17: Decimal("0.01"),
+            18: Decimal("0.23762"),
+            19: Decimal("0.24099"),
+            20: Decimal("0.23196"),
+            21: Decimal("0.21455"),
+            22: Decimal("0.01"),
+        }
+
+        respuesta = self.client.get(reverse("inicio"), self.busqueda)
+
+        self.assertContains(respuesta, "Precios de tu horario")
+        self.assertContains(respuesta, "En tu franja", count=2)
+        self.assertContains(respuesta, "0,23196")
+        self.assertNotContains(respuesta, "0,01000")
+        filas = respuesta.context["detalle_precios"]
+        self.assertEqual([fila["inicio"] for fila in filas], [18, 19, 20, 21])
+        self.assertEqual([fila["fin"] for fila in filas], [19, 20, 21, 22])
+        self.assertEqual([fila["precio"] for fila in filas], [
+            Decimal("0.23762"), Decimal("0.24099"), Decimal("0.23196"), Decimal("0.21455"),
+        ])
+        self.assertEqual([fila["inicio"] for fila in filas if fila["seleccionada"]], [20, 21])
+
+    @patch("energia.views.obtener_precios_con_cache")
+    def test_tabla_conserva_negativos_y_el_limite_de_medianoche(self, consulta):
+        """Los precios negativos mantienen el signo y la última hora termina a las 24."""
+        consulta.return_value = {22: Decimal("-0.01"), 23: Decimal("0")}
+
+        respuesta = self.client.get(
+            reverse("inicio"), {**self.busqueda, "inicio": "22", "fin": "24"}
+        )
+
+        self.assertContains(respuesta, "-0,01000")
+        self.assertContains(respuesta, "0,00000")
+        self.assertContains(respuesta, "En tu franja", count=2)
+        self.assertEqual(respuesta.context["resultado"]["fin"], 24)
+        filas = respuesta.context["detalle_precios"]
+        self.assertEqual([fila["fin"] for fila in filas], [23, 24])
+        self.assertTrue(all(fila["seleccionada"] for fila in filas))

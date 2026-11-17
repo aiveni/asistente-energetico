@@ -1,6 +1,7 @@
 """Datos y validaciones del formulario de búsqueda."""
 
 from django import forms
+from django.utils import timezone
 
 
 class FranjaForm(forms.Form):
@@ -8,22 +9,26 @@ class FranjaForm(forms.Form):
 
     fecha = forms.DateField(
         label="Fecha",
+        initial=timezone.localdate,
+        help_text="El día para el que quieres planificar tu consumo.",
         widget=forms.DateInput(
             attrs={"type": "date"},
             format="%Y-%m-%d",
         ),
     )
-    inicio = forms.IntegerField(
-        label="Disponible desde (hora)",
-        min_value=0,
-        max_value=22,
+    inicio = forms.TypedChoiceField(
+        label="Desde",
+        choices=[(hora, f"{hora:02d}:00") for hora in range(23)],
+        coerce=int,
         initial=18,
+        help_text="Puedes empezar a partir de esta hora.",
     )
-    fin = forms.IntegerField(
-        label="Disponible hasta (hora)",
-        min_value=2,
-        max_value=24,
+    fin = forms.TypedChoiceField(
+        label="Hasta",
+        choices=[(hora, f"{hora:02d}:00") for hora in range(2, 25)],
+        coerce=int,
         initial=22,
+        help_text="Debes terminar antes o a esta hora. 24:00 es medianoche.",
     )
 
     def clean(self):

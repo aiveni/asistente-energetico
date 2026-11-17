@@ -1,34 +1,140 @@
+{% load static %}
 <!doctype html>
 <html lang="es">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Asistente energético</title>
+    <meta name="description" content="Encuentra las dos horas consecutivas más baratas dentro de tu horario con precios PVPC de Red Eléctrica.">
+    <title>Asistente energético · Encuentra tu mejor franja</title>
+    <link rel="stylesheet" href="{% static 'energia/estilos.css' %}">
 </head>
 <body>
-    <h1>Busca las dos horas consecutivas más baratas</h1>
-    <p>Indica tu disponibilidad dentro de un mismo día.</p>
-    <p>Horario de la España peninsular (Europe/Madrid).</p>
-    <p>Por ahora no está disponible en días con cambio de hora.</p>
+    <a class="skip-link" href="#planificador">Ir al planificador</a>
+    <header class="site-header page-width">
+        <a class="brand" href="{% url 'inicio' %}" aria-label="Asistente energético, inicio">
+            <span class="brand-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><path d="m13 3-7 10h5l-1 8 8-11h-6l1-7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+            </span>
+            <span>Asistente <strong>energético</strong></span>
+        </a>
+        <div class="header-links">
+            <span class="tariff-label"><span aria-hidden="true"></span>PVPC · España peninsular</span>
+            <a href="#como-funciona">Cómo funciona <span aria-hidden="true">↗</span></a>
+        </div>
+    </header>
 
-    <form method="get">
-        {{ formulario.as_p }}
-        <button type="submit">Buscar mejor franja</button>
-    </form>
+    <main class="page-width">
+        <section class="intro" aria-labelledby="titulo">
+            <div>
+                <p class="eyebrow">UN MEJOR MOMENTO PARA TU CONSUMO</p>
+                <h1 id="titulo">Encuentra tus dos<br>horas <em>más baratas.</em></h1>
+            </div>
+            <p class="intro-copy">Tú eliges el día y tu disponibilidad.<br> Nosotros comparamos los precios y te recomendamos dos horas seguidas.</p>
+        </section>
 
-    {% if resultado %}
-        <h2>Franja recomendada</h2>
-        <p>Fecha: {{ resultado.fecha|date:"d/m/Y" }}</p>
-        <p>
-            De {{ resultado.inicio }}:00
-            a {{ resultado.fin }}:00.
-        </p>
-        <p>
-            Coste energético para 1 kW constante durante dos horas:
-            {{ resultado.coste }} €.
-        </p>
-        <p>Fuente: Red Eléctrica, REData. PVPC peninsular.</p>
-        <p>Esta estimación no representa una factura completa.</p>
-    {% endif %}
+        <div class="workspace" id="planificador">
+            <section class="search-card" aria-labelledby="titulo-formulario">
+                <div class="section-heading">
+                    <span class="step-number" aria-hidden="true">01</span>
+                    <h2 id="titulo-formulario">Tu disponibilidad</h2>
+                </div>
+                <p class="section-description">¿Cuándo puedes utilizar tu aparato?</p>
+
+                <form method="get" action="{% url 'inicio' %}">
+                    {% if formulario.non_field_errors %}
+                        <div class="form-alert" role="alert">
+                            <strong>No hemos podido completar la búsqueda.</strong>
+                            <ul>{% for error in formulario.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                        </div>
+                    {% endif %}
+                    <fieldset class="form-fields">
+                        <legend class="sr-only">Elige fecha y horario disponible</legend>
+                        {% for campo in formulario %}
+                            <div class="field field--{{ campo.name }}">
+                                <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                                {{ campo }}
+                                {% if campo.errors %}
+                                    <ul class="field-errors" id="{{ campo.auto_id }}_error" role="alert">
+                                        {% for error in campo.errors %}<li>{{ error }}</li>{% endfor %}
+                                    </ul>
+                                {% endif %}
+                                {% if campo.help_text %}<p class="field-help" id="{{ campo.auto_id }}_helptext">{{ campo.help_text }}</p>{% endif %}
+                            </div>
+                        {% endfor %}
+                    </fieldset>
+                    <button class="search-button" type="submit">Buscar mejor franja <span aria-hidden="true">→</span></button>
+                </form>
+
+                <div class="search-notes">
+                    <p><span class="note-dot" aria-hidden="true"></span>Horario peninsular · Europe/Madrid</p>
+                    <p>Dos horas dentro del mismo día. Por ahora no está disponible en días con cambio de hora.</p>
+                </div>
+            </section>
+
+            <div class="results-column">
+                {% if resultado %}
+                    <section class="result-card" aria-labelledby="titulo-resultado">
+                        <div class="result-topline">
+                            <h2 class="eyebrow" id="titulo-resultado">Franja recomendada</h2>
+                            <span class="result-badge">2 horas consecutivas</span>
+                        </div>
+                        <p class="result-date">{{ resultado.fecha|date:"d/m/Y" }} · Dentro de tu horario {{ resultado.disponible_desde|stringformat:"02d" }}:00–{{ resultado.disponible_hasta|stringformat:"02d" }}:00</p>
+                        <p class="result-time"><span>{{ resultado.inicio|stringformat:"02d" }}:00</span><span class="time-arrow" aria-hidden="true">→</span><span class="sr-only">hasta</span><span>{{ resultado.fin|stringformat:"02d" }}:00</span></p>
+                        <div class="result-bottom">
+                            <div><span class="result-caption">Coste de energía estimado</span><p class="result-cost">{{ resultado.coste|floatformat:"5" }} <span>€</span></p></div>
+                            <p class="consumption-note">Referencia de consumo<br><strong>1 kW × 2 h = 2 kWh</strong></p>
+                        </div>
+                        <p class="result-disclaimer">Esta estimación no representa una factura completa.</p>
+                    </section>
+
+                    <section class="prices-card" aria-labelledby="titulo-precios">
+                        <div class="prices-heading"><div><p class="eyebrow">EL PORQUÉ DE TU RESULTADO</p><h2 id="titulo-precios">Precios de tu horario</h2></div><span class="selected-legend"><span aria-hidden="true"></span>Horas elegidas</span></div>
+                        <div class="table-scroll">
+                            <table>
+                                <caption class="sr-only">Precios en euros por kWh del {{ resultado.fecha|date:"d/m/Y" }}, con los dos intervalos elegidos señalados.</caption>
+                                <thead><tr><th scope="col">Intervalo</th><th scope="col" class="numeric">Precio (€/kWh)</th><th scope="col"><span class="sr-only">Selección</span></th></tr></thead>
+                                <tbody>
+                                    {% for fila in detalle_precios %}
+                                        <tr class="price-row{% if fila.seleccionada %} price-row--selected{% endif %}">
+                                            <th scope="row">{{ fila.inicio|stringformat:"02d" }}:00 <span class="interval-dash">–</span> {{ fila.fin|stringformat:"02d" }}:00</th>
+                                            <td class="numeric">{{ fila.precio|floatformat:"5" }}</td>
+                                            <td class="selection-cell">{% if fila.seleccionada %}<span class="selection-badge">En tu franja</span>{% else %}<span class="unselected" aria-hidden="true">—</span><span class="sr-only">No seleccionada</span>{% endif %}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="table-note">La suma de los dos precios destacados da el coste para un aparato de 1 kW constante. Mostramos cinco decimales; el cálculo conserva la precisión original.</p>
+                        <p class="source-note">Fuente: Red Eléctrica, REData. PVPC peninsular.</p>
+                    </section>
+                {% else %}
+                    <section class="empty-result" aria-labelledby="titulo-espera">
+                        <div class="sun-symbol" aria-hidden="true"><svg viewBox="0 0 80 80" fill="none"><circle cx="40" cy="40" r="15"/><path d="M40 6v10M40 64v10M6 40h10M64 40h10M16 16l7 7M57 57l7 7M16 64l7-7M57 23l7-7"/></svg></div>
+                        {% if formulario.errors %}
+                            <p class="eyebrow">PODEMOS VOLVER A INTENTARLO</p>
+                            <h2 id="titulo-espera">Revisa tu búsqueda.</h2>
+                            <p>Encontrarás el motivo junto al formulario. Tus datos siguen ahí para corregirlos o repetir la consulta.</p>
+                        {% else %}
+                            <p class="eyebrow">EMPIEZA CON TU DISPONIBILIDAD</p>
+                            <h2 id="titulo-espera">Tu mejor momento<br>está por llegar.</h2>
+                            <p>Elige una fecha y un horario. Aquí verás las dos horas consecutivas más baratas y los precios que explican la recomendación.</p>
+                        {% endif %}
+                        <span class="empty-footnote">Un pequeño cambio de horario puede marcar la diferencia.</span>
+                    </section>
+                {% endif %}
+            </div>
+        </div>
+
+        <section class="how-it-works" id="como-funciona" aria-labelledby="titulo-metodo">
+            <div class="method-heading"><p class="eyebrow">SENCILLO Y COMPROBABLE</p><h2 id="titulo-metodo">Así encontramos tu franja.</h2></div>
+            <div class="method-grid">
+                <article><span class="method-number">01 /</span><h3>Nos das tu horario</h3><p>Indica un día y el intervalo en el que puedes utilizar tu aparato durante dos horas seguidas.</p></article>
+                <article><span class="method-number">02 /</span><h3>Comparamos los precios</h3><p>Buscamos la pareja de horas consecutivas con menor coste dentro de tu disponibilidad.</p></article>
+                <article><span class="method-number">03 /</span><h3>Tú decides cuándo consumir</h3><p>Consulta las horas elegidas y revisa los precios. El coste usa una referencia constante de 1 kW.</p></article>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer page-width"><p>Asistente energético <span>· Proyecto personal</span></p><a href="https://www.ree.es/es/operacion/sistema-electrico/pvpc">Acerca de los precios PVPC <span aria-hidden="true">↗</span></a></footer>
 </body>
 </html>

@@ -12,11 +12,13 @@ def inicio(request):
     """Muestra el formulario GET y calcula si fecha y horario son válidos.
 
     Reutiliza los precios mediante la caché y calcula cada horario por separado.
-    Entrega el resultado a la plantilla. Los errores HTTP y de datos se muestran como errores generales
-    del formulario, conservando los valores introducidos.
+    Entrega el resultado y los precios del horario a la plantilla. Los errores
+    HTTP y de datos se muestran en el formulario, conservando los valores
+    introducidos y sin mostrar precios de una búsqueda que no se pudo calcular.
     """
     formulario = FranjaForm(request.GET or None)
     resultado = None
+    detalle_precios = []
 
     if formulario.is_valid():
         datos = formulario.cleaned_data
@@ -45,10 +47,26 @@ def inicio(request):
                 "inicio": hora,
                 "fin": hora + 2,
                 "coste": coste,
+                "disponible_desde": datos["inicio"],
+                "disponible_hasta": datos["fin"],
             }
+            # La tabla muestra solo el horario pedido y destaca las dos horas elegidas.
+            detalle_precios = [
+                {
+                    "inicio": intervalo,
+                    "fin": intervalo + 1,
+                    "precio": precios[intervalo],
+                    "seleccionada": hora <= intervalo < hora + 2,
+                }
+                for intervalo in range(datos["inicio"], datos["fin"])
+            ]
 
     return render(
         request,
         "energia/inicio.html",
-        {"formulario": formulario, "resultado": resultado},
+        {
+            "formulario": formulario,
+            "resultado": resultado,
+            "detalle_precios": detalle_precios,
+        },
     )

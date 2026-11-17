@@ -118,6 +118,33 @@ que decidir un backend compartido. La caducidad de la copia no equivale a valida
 la fecha de última publicación de REData. Referencia:
 [caché de Django](https://docs.djangoproject.com/en/6.1/topics/cache/).
 
+## Presentación de la búsqueda
+
+La interfaz utiliza plantillas de Django y CSS dentro de la aplicación, con
+tipografías locales y SVG decorativos sencillos. Esto mantiene el arranque con
+las herramientas Python existentes. Los estilos se descubren mediante staticfiles
+en `energia/static/energia/`, con el mismo criterio de nombres que las plantillas.
+
+Las horas se muestran como opciones legibles con TypedChoiceField y coerce=int.
+El motor sigue recibiendo enteros; el formulario valida la pertenencia a las
+opciones y la relación entre inicio y fin. La fecha inicial usa timezone.localdate
+para seguir Europe/Madrid. LANGUAGE_CODE se cambia a es para presentar importes
+y errores con formato español. Referencia:
+[campos de formulario](https://docs.djangoproject.com/en/6.1/ref/forms/fields/#typedchoicefield).
+
+La vista prepara detalle_precios después de un cálculo correcto: un registro
+por intervalo del horario solicitado, con precio e indicador de selección.
+La plantilla destaca los dos intervalos elegidos y muestra la referencia de
+1 kW constante durante dos horas. El formato visual de cinco decimales no
+modifica los Decimal con los que se calcula. Ante errores la lista queda vacía.
+
+Los controles tienen etiquetas, ayudas y mensajes asociados; hay foco visible,
+enlace para saltar al formulario y una tabla con encabezados y selección textual.
+La adaptación móvil se ha revisado en el navegador con capturas de HTML generado
+por Django y datos de prueba. Las capturas y perfiles temporales están en
+`_local/ui_preview/`, excluido de Git. Las pruebas funcionales utilizan el cliente
+de Django y las consultas simuladas, sin depender de la API en la revisión visual.
+
 ## Dependencias y comprobaciones
 
 uv gestiona `pyproject.toml` y `uv.lock`. La instalación actual usa Python 3.15.2
@@ -125,8 +152,8 @@ y Django 6.1.3. `.venv`, la base SQLite local y los documentos de `_local/` se
 excluyen de Git. Las tablas incluidas por Django no implican tener modelos
 propios ni almacenamiento de los precios consultados.
 
-Las pruebas se ejecutan con `python manage.py test`. Son 59: motor (6), adaptador
-(22), consulta HTTP (11), web (14) y caché (6). Las llamadas externas se simulan para comprobar
+Las pruebas se ejecutan con `python manage.py test`. Son 64: motor (6), adaptador
+(22), consulta HTTP (11), web (16), caché (6) y formulario (3). Las llamadas externas se simulan para comprobar
 éxitos y errores sin depender de la disponibilidad de REData. Las pruebas de
 la web utilizan SimpleTestCase porque este recorrido no accede a una base de datos.
 
@@ -147,6 +174,10 @@ Las pruebas de caché utilizan un backend en memoria aislado y simulan el reloj,
 sin dormir. Comprueban que leer no prolongue la caducidad y que no se guarden
 errores ni datos parciales. Un recorrido web prueba dos horarios distintos con
 una sola descarga, y otro recupera un día completo después de una respuesta parcial.
+Las pruebas de presentación comprueban que la tabla solo incluye el horario
+pedido y destaca dos intervalos, incluyendo precios negativos y el límite de
+medianoche. Los campos horarios se prueban con límites válidos e inválidos para
+conservar el contrato del motor al usar selectores.
 
 ## Documentación y skills
 
