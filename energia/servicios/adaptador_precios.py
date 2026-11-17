@@ -13,6 +13,9 @@ def convertir_precios(registros, fecha_esperada):
 
     fecha_esperada es el día solicitado en formato YYYY-MM-DD. Cada registro
     debe pertenecer a ese día según la fecha local que trae la respuesta.
+
+    Los precios deben ser int, float o Decimal finitos. Se admiten cero y
+    negativos; se rechazan valores ausentes, texto y booleanos con ValueError.
     """
     dia_esperado = date.fromisoformat(fecha_esperada)
     precios = {}
@@ -38,9 +41,17 @@ def convertir_precios(registros, fecha_esperada):
         if hora in precios:
             raise ValueError("El motor actual no admite horas repetidas.")
 
+        valor = registro.get("value")
+        # bool hereda de int en Python, pero true y false no son precios.
+        if isinstance(valor, bool) or not isinstance(valor, (int, float, Decimal)):
+            raise ValueError("Cada registro debe contener un precio numérico.")
+
         # 1 MWh equivale a 1.000 kWh; el motor necesita precios en €/kWh.
         # Pasamos por texto para no convertir el float directamente a Decimal.
-        precio_mwh = Decimal(str(registro["value"]))
+        precio_mwh = Decimal(str(valor))
+        if not precio_mwh.is_finite():
+            raise ValueError("Los precios deben ser números finitos.")
+
         precios[hora] = precio_mwh / Decimal("1000")
 
     return precios

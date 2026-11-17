@@ -139,6 +139,35 @@ class TestInicio(SimpleTestCase):
                 )
                 consulta.assert_called_once_with("2026-11-15")
 
+    @patch("energia.servicios.consultar_precios.httpx.get")
+    def test_precio_invalido_de_api_muestra_error_sin_recomendacion(self, consulta):
+        """La consulta y el adaptador reales rechazan precios inválidos en la web."""
+        contenido = """
+        {"included": [{"id": "1001", "attributes": {"values": [
+            {"datetime": "2026-11-15T18:00:00+01:00", "value": 237.62},
+            {"datetime": "2026-11-15T19:00:00+01:00", "value": 240.99},
+            {"datetime": "2026-11-15T20:00:00+01:00", "value": PRECIO_INVALIDO},
+            {"datetime": "2026-11-15T21:00:00+01:00", "value": 214.55}
+        ]}}]}
+        """
+        # 1e999 es un número JSON que el lector convierte en un float infinito.
+        for valor_json in ["null", '"sin precio"', "true", "1e999", "-1e999"]:
+            with self.subTest(valor_json=valor_json):
+                consulta.reset_mock()
+                consulta.return_value = httpx.Response(
+                    200,
+                    text=contenido.replace("PRECIO_INVALIDO", valor_json),
+                    request=httpx.Request("GET", "https://apidatos.ree.es"),
+                )
+
+                respuesta = self.client.get(reverse("inicio"), self.busqueda)
+
+                self._comprobar_error_sin_resultado(
+                    respuesta,
+                    "No hay datos horarios utilizables para esa fecha y horario.",
+                )
+                consulta.assert_called_once()
+
     @patch("energia.views.obtener_precios")
     def test_busqueda_puede_repetirse_tras_un_fallo(self, consulta):
         """Una segunda búsqueda correcta sustituye el error por la recomendación."""

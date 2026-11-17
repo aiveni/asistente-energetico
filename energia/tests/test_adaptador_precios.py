@@ -45,6 +45,59 @@ class TestConvertirPrecios(unittest.TestCase):
             23: Decimal("0"),
         })
 
+    def test_admite_precios_enteros_y_decimal_sin_redondear(self):
+        """Admite tipos numéricos y conserva los decimales al cambiar de unidad."""
+        casos = [
+            (237, Decimal("0.237")),
+            (Decimal("237.62001"), Decimal("0.23762001")),
+        ]
+
+        for valor, esperado in casos:
+            with self.subTest(valor=valor):
+                registro = {**self.registros[0], "value": valor}
+
+                self.assertEqual(
+                    convertir_precios([registro], fecha_esperada=self.fecha),
+                    {18: esperado},
+                )
+
+    def test_rechaza_registro_sin_precio(self):
+        """La ausencia de value produce un error de datos que la vista puede tratar."""
+        registro = {"datetime": self.registros[0]["datetime"]}
+
+        with self.assertRaisesRegex(ValueError, "precio numérico"):
+            convertir_precios([registro], fecha_esperada=self.fecha)
+
+    def test_rechaza_valores_no_numericos(self):
+        """Rechaza null, texto, booleanos y estructuras en lugar de un número JSON."""
+        valores = [None, "", "sin precio", "237.62", True, False, [], {}]
+
+        for valor in valores:
+            with self.subTest(valor=valor):
+                registro = {**self.registros[0], "value": valor}
+
+                with self.assertRaisesRegex(ValueError, "precio numérico"):
+                    convertir_precios([registro], fecha_esperada=self.fecha)
+
+    def test_rechaza_precios_no_finitos(self):
+        """NaN e infinitos se rechazan antes de dividir o comparar costes."""
+        valores = [
+            float("nan"),
+            float("inf"),
+            float("-inf"),
+            Decimal("NaN"),
+            Decimal("sNaN"),
+            Decimal("Infinity"),
+            Decimal("-Infinity"),
+        ]
+
+        for valor in valores:
+            with self.subTest(valor=valor):
+                registro = {**self.registros[0], "value": valor}
+
+                with self.assertRaisesRegex(ValueError, "finitos"):
+                    convertir_precios([registro], fecha_esperada=self.fecha)
+
     def test_rechaza_duplicados_en_vez_de_sobrescribir_el_precio(self):
         """Un segundo precio para la misma hora provoca un error explícito."""
         duplicado = {

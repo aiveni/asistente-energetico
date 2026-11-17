@@ -69,7 +69,9 @@ del horario indicado, con un ejemplo verificable a mano.
 - [x] Actualizar el README con la consulta real, su ejecución y sus limitaciones actuales.
 - [ ] Normalizar y validar la zona Europe/Madrid antes de admitir fechas arbitrarias.
 - [ ] Definir soporte o rechazo explícito de días con cambio de hora y horarios que crucen medianoche.
-- [ ] Tratar respuestas vacías o malformadas y precios no finitos antes de calcular. **Siguiente paso guiado: validar los precios recibidos.**
+- [x] Rechazar precios ausentes, no numéricos, booleanos, NaN e infinitos en el adaptador, conservando cero y negativos.
+- [x] Probar la precisión de enteros y Decimal y el error web con una respuesta HTTP de precios inválidos.
+- [ ] Validar la estructura de respuestas vacías o malformadas antes de calcular. **Siguiente paso guiado.**
 - [ ] Definir cómo detectar datos caducados y qué mostrar si faltan precios o falla la API.
 
 ## 4. Construir y publicar el planificador Django
@@ -89,6 +91,7 @@ del horario indicado, con un ejemplo verificable a mano.
 - [x] Probar mensajes, conservación de campos y ausencia de recomendación ante fallos HTTP, ValueError y precios vacíos o incompletos.
 - [x] Comprobar que una búsqueda correcta después de un fallo muestra el resultado y elimina el error.
 - [x] Ejecutar las 24 pruebas sin red: siete del recorrido web y 17 de servicios.
+- [x] Ejecutar las 29 pruebas sin red después de validar precios: once del adaptador y ocho de web.
 - [ ] Mejorar la presentación del formulario y del resultado para su uso público.
 - [ ] Configurar comprobaciones automáticas en GitHub Actions al preparar el remoto.
 - [ ] Preparar la configuración de producción: secretos, DEBUG, hosts y HTTPS.
@@ -123,8 +126,10 @@ del horario indicado, con un ejemplo verificable a mano.
   la web pública y detectar errores antes de publicar cambios.
 - **Validación de fecha y hora exacta en el adaptador:** evita mezclar días o convertir
   un registro de las 18:15 en un precio de la hora completa de las 18.
-- **Zona horaria, respuestas malformadas y precios no finitos:** pendientes antes de
+- **Zona horaria y respuestas malformadas:** pendientes antes de
   admitir consultas generales; evitan cálculos con fechas mal interpretadas o datos inválidos.
+- **Precios numéricos y finitos:** impide que un valor ausente, un booleano, NaN o
+  un infinito llegue al motor y genere un error de servidor o una recomendación incorrecta.
 - **Versionar esta lista fuera de `_local/`:** permite revisar el progreso en Git sin
   incluir los otros documentos locales.
 - **Servicios y pruebas agrupados en la app:** reducen los archivos sueltos de la raíz
@@ -154,3 +159,7 @@ del horario indicado, con un ejemplo verificable a mano.
   HTTP 503, errores de datos, precios vacíos o incompletos y reintento correcto.
   Las 24 pruebas pasan sin internet. La vista ya gestionaba estos casos, por lo
   que se conserva su lógica. Próximo paso: validar los precios recibidos.
+- **17-11-2026:** Validación de precios añadida al adaptador. Una prueba nueva
+  reprodujo la aceptación indebida de NaN; después de corregirla, las 29 pruebas
+  pasan. Se comprueba también el recorrido HTTP → adaptador → web sin internet.
+  Pendiente la validación general de la estructura JSON y de la zona horaria.

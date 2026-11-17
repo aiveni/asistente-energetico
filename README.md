@@ -71,8 +71,8 @@ Los ejemplos se ejecutan como módulos (`-m`) porque ahora pertenecen al paquete
 uv run python manage.py test -v 2
 ```
 
-Actualmente hay 24 pruebas: seis del motor, siete del adaptador, cuatro de la
-consulta HTTP simulada y siete del recorrido web. Las pruebas web no usan una
+Actualmente hay 29 pruebas: seis del motor, once del adaptador, cuatro de la
+consulta HTTP simulada y ocho del recorrido web. Las pruebas web no usan una
 base de datos. El comando prepara la configuración de Django para ejecutarlas.
 
 Se comprueba que los fallos de conexión, timeout, estado HTTP y los datos no
@@ -116,16 +116,17 @@ están en [docs/decisiones.md](docs/decisiones.md).
 - Necesita precios para todas las horas del horario solicitado.
 - En caso de empate, elige la primera franja.
 - Rechaza registros de otro día, fuera del inicio de una hora o con horas repetidas.
+- Rechaza precios ausentes, texto, booleanos, NaN e infinitos; conserva cero y negativos.
 - No cruza medianoche ni tiene soporte completo de días con cambio de hora.
-- La normalización a Europe/Madrid y el tratamiento de respuestas malformadas,
-  precios no finitos y datos caducados siguen pendientes.
+- La normalización a Europe/Madrid y el tratamiento de respuestas malformadas
+  y datos caducados siguen pendientes.
 - Cada búsqueda válida consulta REData; todavía no hay caché de precios.
 - Los ajustes de Django son de desarrollo local; la preparación de producción
   se registra como pendiente en TASKS.md.
 
 ## Próximos pasos
 
-1. Validar precios no finitos y respuestas malformadas antes del cálculo.
+1. Validar la estructura de respuestas incompletas o malformadas antes del cálculo.
 2. Revisar zona horaria, cambios de hora y actualización de precios.
 3. Mejorar la presentación, preparar CI y publicar el planificador.
 4. Añadir el chat después del planificador público.
