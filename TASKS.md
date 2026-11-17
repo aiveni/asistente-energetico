@@ -1,6 +1,6 @@
 # Tareas — Asistente energético
 
-Actualizado: 16-11-2026.
+Actualizado: 17-11-2026.
 
 Proyecto personal de portfolio: motor Python y web pública con Django.
 Trabajamos al ritmo de Aitor, una tarea cada vez, explicando qué hacemos y por qué.
@@ -24,7 +24,7 @@ las tareas que solo estén propuestas. Actualizar esta lista conforme avancemos.
 - [x] Preparar `pyproject.toml` con compatibilidad Python >=3.12.
 - [x] Comprobar la ejecución con `uv run` y generar `uv.lock`.
 - [x] Crear un README breve con objetivo y pasos para ejecutar el proyecto.
-- [ ] Registrar las decisiones técnicas en un documento de contexto del repositorio.
+- [x] Registrar las decisiones técnicas en `docs/decisiones.md`.
 - [x] Revisar los archivos y hacer el primer commit local.
 - [x] Mover esta lista de `_local/` a la raíz para incluirla en el historial de Git.
 
@@ -66,7 +66,7 @@ del horario indicado, con un ejemplo verificable a mano.
 - [x] Añadir siete pruebas del adaptador y cuatro de consulta HTTP simulada.
 - [x] Ejecutar las 17 pruebas del proyecto: todas correctas, sin conexión a la API.
 - [x] Guardar la integración de precios reales en el commit `5da5905`.
-- [ ] Actualizar el README con la consulta real, su ejecución y sus limitaciones actuales.
+- [x] Actualizar el README con la consulta real, su ejecución y sus limitaciones actuales.
 - [ ] Normalizar y validar la zona Europe/Madrid antes de admitir fechas arbitrarias.
 - [ ] Definir soporte o rechazo explícito de días con cambio de hora y horarios que crucen medianoche.
 - [ ] Tratar respuestas vacías o malformadas y precios no finitos antes de calcular.
@@ -74,12 +74,20 @@ del horario indicado, con un ejemplo verificable a mano.
 
 ## 4. Construir y publicar el planificador Django
 
-- [ ] Definir la primera pantalla y los datos que deberá introducir la persona usuaria.
-- [ ] Instalar Django y crear el proyecto web. **Siguiente paso guiado: estructura mínima y arranque local.**
-- [ ] Crear el formulario y conectar el motor existente.
-- [ ] Mostrar franja recomendada, unidades, fuente, fecha y mensajes de error claros.
+- [x] Definir la primera pantalla: fecha y horas de inicio y fin dentro del mismo día.
+- [x] Instalar Django 6.1.3, crear `config` y comprobar el arranque local con Aitor.
+- [x] Crear y registrar la aplicación `energia` y sus rutas.
+- [x] Crear el formulario GET y conectarlo con la consulta y el motor.
+- [x] Mostrar franja recomendada, unidades, fuente, fecha y mensajes de error.
+- [x] Añadir tres pruebas web: entrada vacía, resultado correcto y horario corto sin consulta.
+- [x] Completar docstrings en los módulos, clases y funciones Python existentes.
+- [x] Agrupar cálculo y consulta en `energia/servicios/`, y todas las pruebas en `energia/tests/`.
+- [x] Actualizar imports, rutas de patch y comandos después de mover archivos.
+- [x] Ejecutar las 20 pruebas sin red y el ejemplo ficticio después de la reorganización.
 - [ ] Decidir cómo almacenar y actualizar los precios según la necesidad real.
-- [ ] Probar el recorrido completo: formulario → cálculo → resultado.
+- [x] Probar el recorrido completo con precios simulados: formulario → cálculo → resultado.
+- [ ] Probar que la web muestra mensajes ante fallos de la API o datos no utilizables. **Siguiente paso guiado.**
+- [ ] Mejorar la presentación del formulario y del resultado para su uso público.
 - [ ] Configurar comprobaciones automáticas en GitHub Actions al preparar el remoto.
 - [ ] Preparar la configuración de producción: secretos, DEBUG, hosts y HTTPS.
 - [ ] Elegir alojamiento, revisar costes y decidir el despliegue con Aitor.
@@ -117,6 +125,10 @@ del horario indicado, con un ejemplo verificable a mano.
   admitir consultas generales; evitan cálculos con fechas mal interpretadas o datos inválidos.
 - **Versionar esta lista fuera de `_local/`:** permite revisar el progreso en Git sin
   incluir los otros documentos locales.
+- **Servicios y pruebas agrupados en la app:** reducen los archivos sueltos de la raíz
+  y permiten encontrar cálculo, consulta y pruebas sin mezclar sus responsabilidades.
+- **Pruebas web de errores:** comprueban que los fallos de datos o conexión se explican
+  a quien usa el formulario y no se presentan como una recomendación válida.
 
 ## Registro de avances
 
@@ -129,3 +141,10 @@ del horario indicado, con un ejemplo verificable a mano.
   dentro del horario 18–22. El soporte general de zonas y cambios de hora sigue pendiente.
 - **16-11-2026:** Lista actualizada y trasladada a `TASKS.md` para versionarla.
   Próximo bloque de aprendizaje: arranque local de Django; publicación y chat pendientes.
+- **17-11-2026:** Web local creada con aplicación `energia`, formulario GET y plantilla.
+  Al revisar los archivos, `energia/tests.py` todavía contenía la plantilla vacía;
+  se incorporaron las tres pruebas web acordadas. Las 20 pruebas pasan.
+- **17-11-2026:** Docstrings completados y cambios de la web guardados en `0862567`.
+  Servicios y pruebas reorganizados en `985c15d`, conservando el ejemplo ficticio
+  y el resultado real de muestra. README, decisiones y tareas actualizados.
+  Publicación y chat siguen pendientes.
