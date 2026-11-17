@@ -3,7 +3,7 @@
 import unittest
 from decimal import Decimal
 
-from motor import buscar_mejor_franja
+from energia.servicios.motor import buscar_mejor_franja
 
 
 class TestBuscarMejorFranja(unittest.TestCase):

@@ -3,10 +3,9 @@
 import httpx
 from django.shortcuts import render
 
-from consultar_precios import obtener_precios
-from motor import buscar_mejor_franja
-
 from .forms import FranjaForm
+from .servicios.consultar_precios import obtener_precios
+from .servicios.motor import buscar_mejor_franja
 
 
 def inicio(request):

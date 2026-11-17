@@ -1,4 +1,4 @@
-"""Conversión de registros PVPC al formato del motor."""
+"""Convierte y valida registros PVPC para el motor, sin consultar internet."""
 
 from datetime import date, datetime
 from decimal import Decimal

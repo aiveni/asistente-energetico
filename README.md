@@ -22,7 +22,7 @@ uv sync
 ## Ejecutar el ejemplo
 
 ```powershell
-uv run python motor.py
+uv run python -m energia.servicios.motor
 ```
 
 Para el horario 18:00–22:00, el ejemplo devuelve 19:00–21:00
@@ -31,7 +31,7 @@ con un coste de 0,20 €.
 ## Ejecutar las pruebas
 
 ```powershell
-uv run python -m unittest -v
+uv run python manage.py test
 ```
 
 ## Límites actuales

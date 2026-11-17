@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import httpx
 
-from consultar_precios import URL, obtener_precios
+from energia.servicios.consultar_precios import URL, obtener_precios
 
 
 class TestObtenerPrecios(unittest.TestCase):
@@ -45,7 +45,7 @@ class TestObtenerPrecios(unittest.TestCase):
                 respuesta = httpx.Response(200, json=datos, request=self.solicitud)
 
                 # Sustituimos la llamada HTTP, manteniendo la conversión real.
-                with patch("consultar_precios.httpx.get", return_value=respuesta) as consulta:
+                with patch("energia.servicios.consultar_precios.httpx.get", return_value=respuesta) as consulta:
                     precios = obtener_precios(fecha)
 
                 self.assertEqual(precios, {
@@ -75,7 +75,7 @@ class TestObtenerPrecios(unittest.TestCase):
                     request=self.solicitud,
                 )
 
-                with patch("consultar_precios.httpx.get", return_value=respuesta):
+                with patch("energia.servicios.consultar_precios.httpx.get", return_value=respuesta):
                     with self.assertRaisesRegex(ValueError, "no contiene la serie PVPC"):
                         obtener_precios("2026-11-15")
 
@@ -83,7 +83,7 @@ class TestObtenerPrecios(unittest.TestCase):
         """Un estado 503 detiene la consulta antes de intentar leer precios."""
         respuesta = httpx.Response(503, text="Servicio no disponible", request=self.solicitud)
 
-        with patch("consultar_precios.httpx.get", return_value=respuesta):
+        with patch("energia.servicios.consultar_precios.httpx.get", return_value=respuesta):
             with self.assertRaises(httpx.HTTPStatusError) as error:
                 obtener_precios("2026-11-15")
 
@@ -94,6 +94,6 @@ class TestObtenerPrecios(unittest.TestCase):
         error = httpx.ReadTimeout("Tiempo de espera agotado", request=self.solicitud)
 
         # side_effect hace que la llamada simulada lance el error, sin esperar.
-        with patch("consultar_precios.httpx.get", side_effect=error):
+        with patch("energia.servicios.consultar_precios.httpx.get", side_effect=error):
             with self.assertRaises(httpx.ReadTimeout):
                 obtener_precios("2026-11-15")

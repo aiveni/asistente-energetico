@@ -2,7 +2,10 @@
 
 Calcula la franja de dos horas consecutivas más barata sin depender de Django
 ni de internet. El ejemplo se ejecuta solo al lanzar este archivo directamente.
+
+Desde la raíz: python -m energia.servicios.motor.
 """
+
 from decimal import Decimal
 
 precios = {
@@ -11,6 +14,7 @@ precios = {
     20: Decimal("0.08"),
     21: Decimal("0.15"),
 }
+
 
 def buscar_mejor_franja(tarifas, inicio, fin):
     """Devuelve la pareja de horas consecutivas más barata del horario indicado.

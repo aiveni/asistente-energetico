@@ -2,12 +2,14 @@
 
 Importar este módulo no consulta la API. El ejemplo se ejecuta únicamente
 al lanzar el archivo directamente.
+
+Desde la raíz: python -m energia.servicios.consultar_precios.
 """
 
 import httpx
 
-from adaptador_precios import convertir_precios
-from motor import buscar_mejor_franja
+from .adaptador_precios import convertir_precios
+from .motor import buscar_mejor_franja
 
 URL = "https://apidatos.ree.es/es/datos/mercados/precios-mercados-tiempo-real"
 

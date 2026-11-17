@@ -1,4 +1,4 @@
-"""Pruebas del recorrido web con precios simulados y sin acceso a red."""
+"""Pruebas HTTP del formulario y del resultado con precios simulados."""
 
 from decimal import Decimal
 from unittest.mock import patch

@@ -3,8 +3,8 @@
 import unittest
 from decimal import Decimal
 
-from adaptador_precios import convertir_precios
-from motor import buscar_mejor_franja
+from energia.servicios.adaptador_precios import convertir_precios
+from energia.servicios.motor import buscar_mejor_franja
 
 
 class TestConvertirPrecios(unittest.TestCase):
