@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Asistente energético</title>
+</head>
+<body>
+    <h1>Busca las dos horas consecutivas más baratas</h1>
+    <p>Indica tu disponibilidad dentro de un mismo día.</p>
+
+    <form method="get">
+        {{ formulario.as_p }}
+        <button type="submit">Buscar mejor franja</button>
+    </form>
+
+    {% if resultado %}
+        <h2>Franja recomendada</h2>
+        <p>Fecha: {{ resultado.fecha|date:"d/m/Y" }}</p>
+        <p>
+            De {{ resultado.inicio }}:00
+            a {{ resultado.fin }}:00.
+        </p>
+        <p>
+            Coste energético para 1 kW constante durante dos horas:
+            {{ resultado.coste }} €.
+        </p>
+        <p>Fuente: Red Eléctrica, REData. PVPC peninsular.</p>
+        <p>Esta estimación no representa una factura completa.</p>
+    {% endif %}
+</body>
+</html>
