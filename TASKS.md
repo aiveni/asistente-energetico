@@ -128,15 +128,17 @@ Durante la preparación de la primera publicación trabajaremos directamente en
 estables después de revisarlos y comprobar las pruebas aplicables. Tras publicar,
 practicaremos ramas `feature/...` y pull requests para revisar cada tarea.
 Las ramas no crean por sí solas servidores ni publican la web. `main` y
-`development` ya existen localmente; el seguimiento remoto de `development`
-queda pendiente.
+`development` existen localmente y en GitHub, con su seguimiento remoto comprobado.
 
 - [x] Elegir GitHub, conectar el repositorio remoto y realizar el primer push de `main` (seguimiento de `origin/main` comprobado).
-- [ ] Guardar la documentación pendiente en `development` y subirla a GitHub; el objetivo y alcance ya están en `e3ca322`. **Siguiente paso guiado.**
+- [x] Guardar la documentación pendiente en `development` y subirla a GitHub (`6077c8d`); el objetivo y alcance ya están en `e3ca322`.
 - [x] Documentar el flujo inicial: trabajo directo en `development`, comprobaciones y promoción de avances estables a `main`.
 - [x] Crear `development` desde `main` (comprobado: ambas parten de `e3ca322`).
-- [ ] Promover la documentación revisada de `development` a `main`, subir ambas ramas y comprobar su seguimiento remoto.
+- [x] Promover la documentación revisada de `development` a `main`, subir ambas ramas y comprobar su seguimiento remoto (`6077c8d` en ambas).
+- [x] Crear y revisar el contenido del workflow con Python y uv fijados, instalación desde el lock y pruebas de Django (archivo local `.github/workflows/.ci.yml`).
+- [ ] Dejar el workflow con el nombre previsto `.github/workflows/ci.yml` y subirlo junto con TASKS a `development`. **Siguiente paso guiado.**
 - [ ] Configurar las pruebas automáticas en GitHub Actions para los cambios y pull requests hacia `development` y `main`.
+- [ ] Confirmar una ejecución correcta en GitHub Actions después de subir el workflow.
 - [ ] Comprobar el flujo inicial con CI: desarrollar en `development`, revisar las pruebas y promover un avance estable a `main`.
 
 El siguiente cambio técnico será configurar CI directamente en `development`.
@@ -441,3 +443,13 @@ resultados; las explicaciones documentales se apoyarán en las fuentes del RAG.
   las ramas por tarea y pull requests quedan para después del despliegue inicial.
   El siguiente paso es guardar la documentación pendiente, subir `development`
   y promover ese avance a `main`.
+- **20-11-2026:** Con autorización de Aitor se crea `6077c8d`, se sube
+  `development`, se avanza `main` mediante fast-forward y se sube también.
+  Ambas ramas siguen a sus remotos en ese commit y el repositorio queda en
+  `development`. Las 64 pruebas locales pasan. Se prepara la guía para escribir
+  el workflow de CI; su creación y comprobación en GitHub siguen pendientes.
+- **20-11-2026:** Aitor crea el workflow como `.github/workflows/.ci.yml`.
+  Se revisan su contenido y las referencias fijadas de checkout y setup-uv,
+  que existen y admiten los parámetros utilizados. Pendiente usar el nombre
+  previsto `ci.yml`, subirlo a `development` y comprobar la primera ejecución
+  remota antes de promoverlo a `main`.
