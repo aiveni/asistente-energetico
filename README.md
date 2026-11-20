@@ -227,7 +227,7 @@ no certifica la fecha de última publicación de los datos en la fuente.
 
 ## Próximos pasos
 
-1. Conectar GitHub, practicar el flujo de ramas y preparar CI para ejecutar las pruebas.
+1. Guardar la documentación pendiente y preparar CI desde `development`, promoviendo avances comprobados a `main`. El [flujo de ramas](docs/decisiones.md#flujo-de-ramas-durante-el-arranque) queda documentado.
 2. Revisar los ajustes de producción y publicar el planificador de dos horas.
 3. Definir y validar la primera entrega de análisis de consumos reales y comparación de escenarios.
 4. Conectar el chat a los servicios comprobados y ampliar después hacia autoconsumo.

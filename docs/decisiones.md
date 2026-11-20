@@ -54,6 +54,18 @@ evaluación, con una decisión de adopción pendiente.
 Antes de ampliar cada entrega se preparará una comprobación con usuarios para
 ver si entienden el resultado, los supuestos y qué decisión les permite tomar.
 
+## Flujo de ramas durante el arranque
+
+El 20-11-2026 Aitor elige trabajar directamente en `development` mientras se
+prepara la primera publicación. Se mantendrán cambios pequeños y comprobaciones
+antes de promover avances estables a `main`. GitHub Actions se preparará desde
+`development` para ejecutar las pruebas de ambas ramas.
+
+Tras el primer despliegue se practicarán ramas `feature/...` y pull requests.
+Este orden permite aprender el flujo de integración con las dos ramas actuales
+y añadir la revisión por tarea sobre una primera aplicación publicada. Los
+commits del asistente siguen requiriendo autorización expresa de Aitor.
+
 ## Motor determinista separado de la web
 
 `energia/servicios/motor.py` solo calcula. Recibe precios como Decimal en €/kWh

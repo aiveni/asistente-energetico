@@ -1,6 +1,6 @@
 # Tareas — Asistente energético
 
-Actualizado: 19-11-2026.
+Actualizado: 20-11-2026.
 
 Asistente público para ayudar a hogares a entender su consumo eléctrico y
 comparar decisiones con datos y supuestos explícitos. Proyecto de portfolio y
@@ -119,22 +119,33 @@ del horario indicado, con un ejemplo verificable a mano.
 - [x] Revisar capturas locales de escritorio y móvil a 320 y 390 píxeles, sin desbordamiento horizontal.
 ### Repositorio remoto, ramas y pruebas automáticas
 
-Recomendación actual: GitHub para alojar el código, revisar pull requests y
-ejecutar las pruebas con GitHub Actions. La elección y la conexión siguen pendientes.
+Plataforma elegida: GitHub para alojar el código, revisar pull requests y ejecutar
+las pruebas con GitHub Actions. El remoto `origin` apunta a
+https://github.com/aiveni/asistente-energetico.git y `main` sigue a `origin/main`.
 
-Propuesta para practicar el trabajo con ramas: `main` contiene versiones estables
-listas para publicar; `development` integra los cambios; cada tarea se desarrolla
-en una rama temporal `feature/...` creada desde `development`. Las ramas no crean
-por sí solas servidores ni publican la web. Actualmente solo existe `main` local.
+Durante la preparación de la primera publicación trabajaremos directamente en
+`development`, con cambios pequeños y comprobados. `main` recogerá avances
+estables después de revisarlos y comprobar las pruebas aplicables. Tras publicar,
+practicaremos ramas `feature/...` y pull requests para revisar cada tarea.
+Las ramas no crean por sí solas servidores ni publican la web. `main` y
+`development` ya existen localmente; el seguimiento remoto de `development`
+queda pendiente.
 
-- [ ] Elegir GitHub o GitLab, conectar el repositorio remoto y realizar el primer push. **Siguiente paso guiado.**
-- [ ] Documentar el flujo de ramas, los nombres y el recorrido tarea → commits → revisión → fusión.
-- [ ] Crear `development` desde `main`, subir ambas ramas y comprobar su seguimiento remoto.
-- [ ] Preparar la siguiente tarea en `feature/ci`, creada desde `development`.
-- [ ] Configurar las pruebas automáticas en GitHub Actions o GitLab CI, según la plataforma elegida, para los cambios y PR/MR hacia `development` y `main`.
-- [ ] Practicar una pull request (GitHub) o merge request (GitLab) de `feature/ci` a `development`, con descripción, revisión y pruebas correctas antes de fusionar.
-- [ ] Configurar la protección de `main` y `development` con PR/MR y comprobaciones obligatorias, según las opciones de la cuenta y el trabajo individual.
-- [ ] Practicar la promoción de `development` a `main` mediante PR/MR para preparar una versión publicable.
+- [x] Elegir GitHub, conectar el repositorio remoto y realizar el primer push de `main` (seguimiento de `origin/main` comprobado).
+- [ ] Guardar la documentación pendiente en `development` y subirla a GitHub; el objetivo y alcance ya están en `e3ca322`. **Siguiente paso guiado.**
+- [x] Documentar el flujo inicial: trabajo directo en `development`, comprobaciones y promoción de avances estables a `main`.
+- [x] Crear `development` desde `main` (comprobado: ambas parten de `e3ca322`).
+- [ ] Promover la documentación revisada de `development` a `main`, subir ambas ramas y comprobar su seguimiento remoto.
+- [ ] Configurar las pruebas automáticas en GitHub Actions para los cambios y pull requests hacia `development` y `main`.
+- [ ] Comprobar el flujo inicial con CI: desarrollar en `development`, revisar las pruebas y promover un avance estable a `main`.
+
+El siguiente cambio técnico será configurar CI directamente en `development`.
+
+### Gestión por tareas después de la primera publicación
+
+- [ ] Practicar una rama `feature/...` desde `development` y una pull request hacia `development`, con descripción, revisión y pruebas correctas antes de fusionar.
+- [ ] Configurar la protección de `main` y `development` con pull requests y comprobaciones obligatorias, según las opciones de la cuenta y el trabajo individual.
+- [ ] Practicar la promoción de `development` a `main` mediante pull request para preparar una versión publicable.
 
 ### Publicación en la nube
 
@@ -299,10 +310,12 @@ resultados; las explicaciones documentales se apoyarán en las fuentes del RAG.
   recuperada y comprobar que las citas apoyan lo que se responde.
 - **Evaluación de frameworks:** permite aprender LangChain y LangGraph con un caso
   concreto y justificar su adopción frente a una integración directa.
-- **Repositorio remoto:** permite conservar una copia en GitHub o GitLab y ejecutar
-  las comprobaciones automáticas allí. El repositorio local todavía no tiene remoto.
-- **Ramas y PR/MR:** permiten practicar cambios por tarea, revisar su motivo y sus
-  pruebas, e integrar una versión estable antes de publicarla.
+- **Repositorio remoto:** permite conservar una copia en GitHub y ejecutar las
+  comprobaciones automáticas allí. La conexión de `origin` y el seguimiento de
+  `main` a `origin/main` están comprobados.
+- **Ramas y revisión de cambios:** durante el arranque permiten trabajar en
+  `development` y conservar avances estables en `main`. Las ramas por tarea y
+  pull requests se practicarán después de la primera publicación.
 - **Archivos estáticos y arranque de producción:** hacen que el alojamiento pueda
   servir la interfaz y ejecutar Django fuera del servidor local de desarrollo.
 - **Despliegue y vuelta a la versión anterior:** relacionan lo publicado con un
@@ -412,3 +425,19 @@ resultados; las explicaciones documentales se apoyarán en las fuentes del RAG.
   pasa a ser el análisis de consumos reales y escenarios, seguido del chat sobre
   esos servicios y el autoconsumo. Se actualizan README, decisiones y esta lista;
   formatos, tarifas admitidas y tratamiento de archivos quedan por definir.
+- **20-11-2026:** Al retomar el proyecto se comprueban `origin` en GitHub y
+  `main` siguiendo `origin/main` en `a0eef81`. README, TASKS y decisiones tienen
+  cambios pendientes de commit. El siguiente paso guiado es guardar esa
+  documentación y crear `development`, antes de preparar `feature/ci`.
+- **20-11-2026:** Durante la revisión Aitor guarda la definición del producto
+  en `e3ca322`. Quedan por guardar las actualizaciones de progreso en README
+  y TASKS, subir `main` y crear `development` con seguimiento remoto.
+- **20-11-2026:** Se comprueba `development` creada localmente en `e3ca322`,
+  todavía sin seguimiento remoto. Quedan README y TASKS modificados y `main`
+  un commit por delante de `origin/main`. Se prepara el paso guiado para guardar
+  el progreso, actualizar y subir ambas ramas, y crear `feature/ci`.
+- **20-11-2026:** Aitor decide trabajar directamente en `development` durante
+  la preparación de la primera publicación. CI se configurará en esa rama;
+  las ramas por tarea y pull requests quedan para después del despliegue inicial.
+  El siguiente paso es guardar la documentación pendiente, subir `development`
+  y promover ese avance a `main`.
