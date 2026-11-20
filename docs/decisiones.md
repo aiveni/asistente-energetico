@@ -72,6 +72,27 @@ Este orden permite aprender el flujo de integración con las dos ramas actuales
 y añadir la revisión por tarea sobre una primera aplicación publicada. Los
 commits del asistente siguen requiriendo autorización expresa de Aitor.
 
+## Configuración mediante variables de entorno
+
+La configuración obtiene `SECRET_KEY`, `DEBUG` y `ALLOWED_HOSTS` de
+`DJANGO_SECRET_KEY`, `DJANGO_DEBUG` y `DJANGO_ALLOWED_HOSTS`. Solo el texto `true`,
+sin distinguir mayúsculas y tras quitar espacios, activa DEBUG. Por defecto
+queda desactivado. Se comunica ImproperlyConfigured si falta la clave y, con
+DEBUG desactivado, si la lista de hosts está vacía.
+
+En desarrollo se carga el `.env` de la raíz mediante python-dotenv, después de
+definir BASE_DIR y antes de consultar las variables. `override=False` respeta
+las variables externas, permitiendo configurar CI y el alojamiento sin depender
+del archivo local. `.env` queda excluido de Git y `.env.example` conserva una
+plantilla con la clave vacía. La clave se genera una vez y se conserva entre
+arranques.
+
+CI utilizará una clave ficticia identificable en su workflow y valores explícitos
+de DEBUG y hosts. Las claves locales y de producción se mantienen separadas de
+esa configuración. Se han comprobado los errores por clave y hosts ausentes,
+la configuración de desarrollo y producción, y la prioridad del entorno sobre
+el archivo local.
+
 ## Motor determinista separado de la web
 
 `energia/servicios/motor.py` solo calcula. Recibe precios como Decimal en €/kWh

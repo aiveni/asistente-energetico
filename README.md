@@ -65,12 +65,32 @@ El entorno actual utiliza Python 3.15.2 y Django 6.1.3. Las dependencias se
 declaran en `pyproject.toml` y sus versiones resueltas se guardan en `uv.lock`.
 `tzdata` se declara como dependencia directa para disponer de los datos de zona
 horaria también en Windows.
+`python-dotenv` permite cargar la configuración local desde `.env`.
 
 Desde la raíz del repositorio:
 
 ```powershell
 uv sync
 ```
+
+Para la primera instalación, crea `.env` en la raíz a partir de `.env.example`.
+Si ya tienes un `.env`, conserva sus valores. Para desarrollo local configura
+`DJANGO_DEBUG=true`, `DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1` y una
+`DJANGO_SECRET_KEY` propia. Puedes generar la clave en tu terminal con:
+
+```powershell
+uv run python -c "import secrets; print(secrets.token_urlsafe(64))"
+```
+
+Guarda el resultado como valor de `DJANGO_SECRET_KEY` en `.env`. Mantén esa clave
+entre arranques. `.env` está excluido de Git; `.env.example` es la plantilla
+versionada y deja la clave vacía.
+
+La configuración carga `.env` antes de leer las variables, sin sobrescribir las
+que ya estén definidas en el entorno. El valor `true` activa DEBUG; por defecto
+queda desactivado. El arranque comunica un error si falta la clave o, con DEBUG
+desactivado, si faltan los hosts permitidos. Estos se escriben separados por
+comas, con nombres de host sin esquema ni puerto.
 
 ## Arrancar la web en local
 
@@ -120,6 +140,12 @@ Actualmente hay 64 pruebas: seis del motor, veintidós del adaptador, once de la
 consulta HTTP simulada, dieciséis del recorrido web, seis de caché y tres del
 formulario. Las pruebas web no usan una
 base de datos. El comando prepara la configuración de Django para ejecutarlas.
+
+GitHub Actions ejecuta la instalación desde `uv.lock` y las pruebas al subir
+cambios a `development` y `main`, y en pull requests hacia esas ramas. El workflow
+está en `.github/workflows/ci.yml` y define las variables necesarias para las
+pruebas. La clave de CI debe ser ficticia y distinta de las claves de los entornos
+local y de producción.
 
 Se comprueba que los fallos de conexión, timeout, estado HTTP y los datos no
 utilizables muestran un error sin recomendación, conservan los campos y permiten

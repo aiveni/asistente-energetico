@@ -29,3 +29,8 @@ jobs:
 
       - name: Ejecutar pruebas
         run: uv run --locked python manage.py test -v 2
+
+    env:
+      DJANGO_DEBUG: "False"
+      DJANGO_SECRET_KEY: "A0MIUW7mmC5Ld2q_wxD-dvjbiQBMccJqgPYI99IEMpCvZxA8yP097mK8Pf0fMxmeOxyd-bLO6YEdczbpVe1S5g"
+      DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1,testserver"

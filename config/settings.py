@@ -3,23 +3,37 @@
 Esta configuración permite ejecutar el planificador en el equipo. La tarea
 de preparar secretos y ajustes de producción sigue pendiente en TASKS.md.
 """
-
+import os
 from pathlib import Path
-
+from dotenv import load_dotenv
+from django.core.exceptions import ImproperlyConfigured
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(BASE_DIR / ".env", override=False)
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-_a2no_0frgccrfy_0b)&f2x69lp+5eiw2#nhh)@c%!@q0u*@^!'
+# Solo el texto "true" activa el modo de desarrollo.
+DEBUG = os.environ.get("DJANGO_DEBUG", "false").strip().lower() == "true"
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "").strip()
+if not SECRET_KEY:
+    raise ImproperlyConfigured("Falta la variable DJANGO_SECRET_KEY.")
 
-ALLOWED_HOSTS = []
+# Convertimos una cadena separada por comas en una lista de dominios.
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",")
+    if host.strip()
+]
+
+if not DEBUG and not ALLOWED_HOSTS:
+    raise ImproperlyConfigured(
+        "Define DJANGO_ALLOWED_HOSTS cuando DJANGO_DEBUG sea false."
+    )
 
 
 # Application definition
