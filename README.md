@@ -66,6 +66,7 @@ declaran en `pyproject.toml` y sus versiones resueltas se guardan en `uv.lock`.
 `tzdata` se declara como dependencia directa para disponer de los datos de zona
 horaria también en Windows.
 `python-dotenv` permite cargar la configuración local desde `.env`.
+WhiteNoise sirve los archivos estáticos cuando DEBUG está desactivado.
 
 Desde la raíz del repositorio:
 
@@ -133,8 +134,12 @@ Los ejemplos se ejecutan como módulos (`-m`) porque ahora pertenecen al paquete
 ## Ejecutar las pruebas
 
 ```powershell
+uv run python manage.py collectstatic --noinput
 uv run python manage.py test -v 2
 ```
+
+`collectstatic` prepara los archivos y el manifiesto que utilizan las plantillas
+con DEBUG desactivado, también durante las pruebas web.
 
 Actualmente hay 64 pruebas: seis del motor, veintidós del adaptador, once de la
 consulta HTTP simulada, dieciséis del recorrido web, seis de caché y tres del
@@ -203,7 +208,34 @@ Se han revisado capturas de páginas renderizadas por Django con datos de prueba
 estados inicial, resultado y error en escritorio, y resultado y error en móvil,
 incluidos anchos de 320 y 390 píxeles sin desbordamiento horizontal de la página.
 Las búsquedas se verifican automáticamente con el cliente de pruebas de Django.
-La preparación de los archivos estáticos para producción sigue pendiente.
+La preparación y entrega de archivos estáticos se describe a continuación.
+
+## Archivos estáticos
+
+El CSS fuente se mantiene en `energia/static/energia/`. `collectstatic` reúne
+los archivos de las aplicaciones en `staticfiles/`, que está excluido de Git.
+El almacenamiento CompressedManifestStaticFilesStorage genera nombres con una
+huella del contenido y versiones comprimidas. Las plantillas utilizan la
+etiqueta static de Django para obtener la URL de la versión correspondiente.
+
+WhiteNoise entrega estos archivos desde la aplicación con DEBUG desactivado.
+Su middleware se coloca inmediatamente después de SecurityMiddleware. Para
+comprobarlo localmente en PowerShell:
+
+```powershell
+$env:DJANGO_DEBUG = "false"
+uv run python manage.py collectstatic --noinput
+uv run python manage.py runserver --nostatic
+```
+
+Después de detener el servidor con Ctrl+C, usa `Remove-Item Env:DJANGO_DEBUG`
+para volver al valor del `.env`. Este runserver es una comprobación local;
+el servidor de aplicación para el despliegue sigue pendiente.
+
+Se ha comprobado la entrega a través de la aplicación con DEBUG desactivado:
+HTML y CSS devuelven HTTP 200, el HTML referencia el CSS versionado, la versión
+gzip conserva su contenido y un archivo inexistente devuelve 404. El orden de
+CI será instalar dependencias, preparar estáticos y ejecutar las pruebas.
 
 ## Caché de precios de la web
 

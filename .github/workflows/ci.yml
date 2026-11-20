@@ -25,7 +25,10 @@ jobs:
           python-version: "3.15.2"
 
       - name: Instalar dependencias
-        run: uv sync --locked #Instalamos las versiones de lockfile de las dependencias del proyecto. Y que coincidan con las versiones de lockfile del proyecto.
+        run: uv sync --locked # Verifica el lock e instala sus versiones.
+
+      - name: Preparar archivos estáticos
+        run: uv run --locked python manage.py collectstatic --noinput # Reúne los estáticos en STATIC_ROOT y prepara el manifiesto.
 
       - name: Ejecutar pruebas
         run: uv run --locked python manage.py test -v 2

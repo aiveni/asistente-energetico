@@ -228,6 +228,25 @@ por Django y datos de prueba. Las capturas y perfiles temporales están en
 `_local/ui_preview/`, excluido de Git. Las pruebas funcionales utilizan el cliente
 de Django y las consultas simuladas, sin depender de la API en la revisión visual.
 
+## Archivos estáticos para el despliegue
+
+WhiteNoise se incorpora para entregar los estáticos desde la aplicación con
+DEBUG desactivado. La posición prevista de su middleware es inmediatamente
+después de SecurityMiddleware. STATIC_ROOT apunta a `BASE_DIR / "staticfiles"`,
+una carpeta generada y excluida de Git; los fuentes permanecen en las aplicaciones.
+
+STORAGES conserva FileSystemStorage para el alias default y utiliza
+CompressedManifestStaticFilesStorage para staticfiles. El proceso de collectstatic
+prepara el manifiesto, los nombres con huella del contenido y la compresión gzip.
+Por eso se ejecutará en CI después de instalar dependencias y antes de las pruebas.
+
+La comprobación local con DEBUG desactivado verifica respuesta 200 de HTML y CSS,
+referencia a la URL versionada, coincidencia del contenido original, respuesta
+gzip, cabecera de caché inmutable y 404 para un archivo ausente. Runserver con
+--nostatic sirve como comprobación manual; el servidor del despliegue se preparará
+en un paso posterior. Referencia:
+[WhiteNoise con Django](https://whitenoise.readthedocs.io/en/stable/django.html).
+
 ## Dependencias y comprobaciones
 
 uv gestiona `pyproject.toml` y `uv.lock`. La instalación actual usa Python 3.15.2
