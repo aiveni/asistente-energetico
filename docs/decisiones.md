@@ -1,14 +1,58 @@
 # Decisiones del proyecto
 
-Actualizado: 17-11-2026. Contexto para retomar el trabajo y revisar sus motivos.
+Actualizado: 19-11-2026. Contexto para retomar el trabajo y revisar sus motivos.
 
 ## Producto y ritmo
 
-El objetivo es un asistente energético público de portfolio. El orden acordado
-es entorno Windows con Git y uv, motor ficticio, datos reales, planificador web
-y chat. El asistente del paro queda aplazado. Aitor avanza por pasos y comprende
-el motivo de cada decisión; los cambios del asistente se hacen cuando se solicitan.
-Los commits solo se crean con autorización expresa de Aitor.
+El objetivo es un asistente energético público para ayudar a hogares a entender
+su consumo y comparar decisiones sobre él, con datos y supuestos comprobables.
+El proyecto sirve también como portfolio y aprendizaje de datos de energía e IA.
+
+El recorrido inicial fue entorno Windows con Git y uv, motor ficticio, datos
+reales y planificador web. El 19-11-2026 se concreta la siguiente prioridad:
+publicar el planificador, incorporar análisis de consumos reales, conectar el
+chat a los servicios validados y ampliar después hacia autoconsumo. La simulación
+solar queda como idea posterior. El asistente del paro sigue aplazado.
+
+Aitor avanza por pasos y comprende el motivo de cada decisión; los cambios del
+asistente se hacen cuando se solicitan. Los commits solo se crean con autorización
+expresa de Aitor.
+
+## Alcance de producto y criterio de entrega
+
+La primera publicación mantiene el motor actual de dos horas consecutivas dentro
+de un mismo día, con precios PVPC peninsulares y referencia de consumo constante
+de 1 kW. Incluye formulario, resultado verificable, tabla, mensajes de error y una
+interfaz para escritorio y móvil. Termina al comprobar pruebas, configuración de
+producción y acceso desde una URL pública con HTTPS. El alcance se resume también
+en README y el trabajo pendiente se mantiene en TASKS.
+
+La siguiente entrega prioriza el análisis de archivos de consumo: revisar cuándo
+se consume, calcular costes para una tarifa admitida y comparar cambios definidos
+por el usuario. El primer formato de archivo y el primer tipo de tarifa se
+elegirán antes de implementar la subida. Se comprobará primero con datos
+sintéticos y ejemplos manuales, después con una muestra real anonimizada.
+
+Una curva agregada no identifica por sí sola qué aparatos se pueden desplazar.
+Las simulaciones pedirán energía desplazable, disponibilidad y restricciones al
+usuario, conservarán el consumo total y mostrarán las hipótesis. Los costes
+deberán corresponder a los precios, fechas e intervalos de esa tarifa; la cobertura
+de conceptos de factura se documentará en cada versión.
+
+La incorporación de archivos requiere definir validación de formato, unidades,
+zona horaria, intervalos repetidos o ausentes y tratamiento de los datos del hogar.
+Se decidirá la retención mínima y se limitarán los datos enviados al modelo a lo
+necesario para responder. Las muestras y registros de prueba usarán datos
+sintéticos o anonimizados.
+
+Los cálculos y escenarios serán servicios Python independientes y comprobables.
+El chat podrá solicitarlos mediante function calling y explicar sus resultados.
+RAG se evaluará para preguntas documentales sobre autoconsumo con fuentes
+oficiales. LangChain y LangGraph siguen siendo opciones de aprendizaje y
+evaluación, con una decisión de adopción pendiente.
+
+Antes de ampliar cada entrega se preparará una comprobación con usuarios para
+ver si entienden el resultado, los supuestos y qué decisión les permite tomar.
 
 ## Motor determinista separado de la web
 

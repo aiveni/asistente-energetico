@@ -1,8 +1,44 @@
-# Planificador energético
+# Asistente energético
 
+Asistente para ayudar a hogares a entender su consumo eléctrico y comparar
+decisiones sobre cuándo consumir, con datos, cálculos y supuestos explícitos.
 Proyecto personal de portfolio con motor Python y web Django en desarrollo local.
-Permite elegir una fecha y un horario para buscar las dos horas consecutivas
-más baratas con precios PVPC peninsulares de Red Eléctrica.
+El aprendizaje de datos de energía e IA aplicada forma parte del objetivo.
+
+## Objetivo y entregas previstas
+
+El planificador es la primera entrega. La siguiente ampliación prioritaria será
+analizar consumos reales aportados por el usuario. Después, el chat podrá utilizar
+esos resultados para responder preguntas y comparar escenarios; el autoconsumo
+se incorporará sobre esa base. La simulación de producción solar queda para una
+fase posterior que todavía requiere concretar sus datos y alcance.
+
+| Entrega | Utilidad prevista | Situación |
+| --- | --- | --- |
+| Planificador público | Elegir las dos horas consecutivas más baratas dentro del horario disponible. | Funciona en local; publicación pendiente. |
+| Análisis de consumos | Subir un archivo admitido, indicar una tarifa y revisar consumos y costes por intervalos. | Próxima ampliación tras publicar; formato y tarifas admitidas por definir. |
+| Chat sobre los datos | Preguntar por los resultados y solicitar comparaciones mediante herramientas Python. | Pendiente, después de validar los cálculos que utilizará. |
+| Autoconsumo | Resolver dudas con fuentes oficiales y estudiar consumo y producción cuando haya datos compatibles. | Ampliación posterior. |
+| Simulación solar | Estimar producción y comparar escenarios de instalación y consumo. | Idea por concretar. |
+
+El recorrido futuro será: aportar consumos → validar los datos y la tarifa →
+mostrar el análisis → definir un cambio posible → comparar escenarios → explicar
+el resultado. Los consumos que se puedan desplazar y sus límites deberán
+confirmarse con el usuario. Cada comparación conservará la misma energía y
+explicará qué precios y conceptos de coste utiliza.
+
+## Alcance de la primera entrega
+
+La primera publicación ofrecerá un formulario de fecha y horario dentro de un
+mismo día, precios PVPC peninsulares, recomendación de dos horas consecutivas,
+tabla para comprobarla y mensajes cuando falten datos o la entrada no sea válida.
+El coste de referencia corresponde a 1 kW constante durante las dos horas.
+La interfaz se adapta a móvil y explica las limitaciones de horario y cálculo.
+
+La entrega se considerará terminada cuando las comprobaciones automáticas sean
+correctas y la búsqueda pueda utilizarse desde una URL pública con configuración
+de producción y HTTPS. La subida de consumos, las duraciones configurables, la
+comparación de aparatos y el chat pertenecen a entregas posteriores.
 
 ## Qué hace actualmente
 
@@ -191,6 +227,7 @@ no certifica la fecha de última publicación de los datos en la fuente.
 
 ## Próximos pasos
 
-1. Preparar CI para ejecutar las pruebas al subir cambios al repositorio remoto.
-2. Revisar los ajustes de producción y publicar el planificador.
-3. Añadir el chat después del planificador público.
+1. Conectar GitHub, practicar el flujo de ramas y preparar CI para ejecutar las pruebas.
+2. Revisar los ajustes de producción y publicar el planificador de dos horas.
+3. Definir y validar la primera entrega de análisis de consumos reales y comparación de escenarios.
+4. Conectar el chat a los servicios comprobados y ampliar después hacia autoconsumo.
