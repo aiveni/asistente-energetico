@@ -8,6 +8,7 @@ __pycache__/
 .ruff_cache/
 
 _local/
+/TASKS.md
 
 db.sqlite3
 db.sqlite3-journal

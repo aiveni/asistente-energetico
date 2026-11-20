@@ -55,7 +55,7 @@ tabla de precios del horario consultado que destaca los dos intervalos elegidos.
 Los estados inicial y de error conservan una explicación sin inventar precios.
 La interfaz está en español y se adapta a escritorio y móvil.
 
-Progreso: [TASKS.md](TASKS.md). Motivos de la estructura y del cálculo:
+Motivos de la estructura y del cálculo:
 [docs/decisiones.md](docs/decisiones.md).
 
 ## Preparación
@@ -154,7 +154,6 @@ docs/                          Decisiones y contexto técnico
 manage.py                      Entrada para los comandos de Django
 pyproject.toml                 Metadatos y dependencias del proyecto
 uv.lock                        Versiones resueltas
-TASKS.md                       Progreso y trabajo pendiente
 ```
 
 Los servicios se pueden importar sin iniciar peticiones HTTP ni cargar Django.
@@ -223,11 +222,11 @@ no certifica la fecha de última publicación de los datos en la fuente.
   de la caducidad de cinco minutos de nuestra copia.
 - La caché es local al proceso; el backend para producción se decidirá al desplegar.
 - Los ajustes de Django son de desarrollo local; la preparación de producción
-  se registra como pendiente en TASKS.md.
+  sigue pendiente.
 
 ## Próximos pasos
 
-1. Guardar la documentación pendiente y preparar CI desde `development`, promoviendo avances comprobados a `main`. El [flujo de ramas](docs/decisiones.md#flujo-de-ramas-durante-el-arranque) queda documentado.
+1. Completar la comprobación de CI en `main` al promover el siguiente avance estable desde `development`. El [flujo de ramas](docs/decisiones.md#flujo-de-ramas-durante-el-arranque) queda documentado.
 2. Revisar los ajustes de producción y publicar el planificador de dos horas.
 3. Definir y validar la primera entrega de análisis de consumos reales y comparación de escenarios.
 4. Conectar el chat a los servicios comprobados y ampliar después hacia autoconsumo.

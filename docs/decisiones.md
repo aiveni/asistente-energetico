@@ -18,6 +18,12 @@ Aitor avanza por pasos y comprende el motivo de cada decisión; los cambios del
 asistente se hacen cuando se solicitan. Los commits solo se crean con autorización
 expresa de Aitor.
 
+Desde el 20-11-2026 la lista se mantiene en `_local/TASKS.md` y se excluye de
+Git. Se actualiza al avanzar, sin crear commits específicos para registrar cada
+casilla. El objetivo, los motivos técnicos y las instrucciones de uso siguen en
+la documentación versionada. Su retirada del repositorio se incluirá en el
+próximo commit de un avance del proyecto.
+
 ## Alcance de producto y criterio de entrega
 
 La primera publicación mantiene el motor actual de dos horas consecutivas dentro
@@ -25,7 +31,7 @@ de un mismo día, con precios PVPC peninsulares y referencia de consumo constant
 de 1 kW. Incluye formulario, resultado verificable, tabla, mensajes de error y una
 interfaz para escritorio y móvil. Termina al comprobar pruebas, configuración de
 producción y acceso desde una URL pública con HTTPS. El alcance se resume también
-en README y el trabajo pendiente se mantiene en TASKS.
+en README y el trabajo pendiente se mantiene en `_local/TASKS.md`.
 
 La siguiente entrega prioriza el análisis de archivos de consumo: revisar cuándo
 se consume, calcular costes para una tarifa admitida y comparar cambios definidos
@@ -238,6 +244,6 @@ conservar el contrato del motor al usar selectores.
 ## Documentación y skills
 
 Los módulos, clases y funciones tienen docstrings que describen su propósito,
-contrato o caso probado. README explica el uso, TASKS registra lo comprobado y
-este archivo conserva las decisiones. Una skill propia se valorará cuando exista
+contrato o caso probado. README explica el uso, `_local/TASKS.md` registra lo
+comprobado y este archivo conserva las decisiones. Una skill propia se valorará cuando exista
 un procedimiento repetido que la justifique.
